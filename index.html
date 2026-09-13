@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080a0f">
+<title>The Seven Sleepers — Control Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#080a0f;--panel:#10131a;--panel2:#151923;--line:#252b38;--text:#f3f5f8;--muted:#8f98a8;--accent:#78a7ff;--accent2:#9a7cff;--good:#6fd7a3;--warn:#f2c66d;--danger:#ef7777;--radius:22px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;background:radial-gradient(circle at 70% -10%,#17213b 0,#080a0f 38%);color:var(--text)}
+button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:1100px;margin:auto;min-height:100vh;padding:18px 18px 112px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.brand{display:flex;gap:11px;align-items:center}.orb{width:38px;height:38px;border-radius:13px;background:linear-gradient(145deg,#8db4ff,#8063dd);box-shadow:0 0 28px #708fff44;display:grid;place-items:center;font-weight:800}.brand b{font-size:15px;letter-spacing:.4px}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.iconbtn{border:1px solid var(--line);background:#11151e;color:#dce2ed;border-radius:13px;width:42px;height:42px;display:inline-grid;place-items:center}
+.view{display:none;animation:in .25s ease}.view.active{display:block}@keyframes in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.hello{margin:12px 0 22px}.hello h1{font-size:32px;margin:0 0 5px}.hello p{margin:0;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:linear-gradient(145deg,#11151d,#0d1016);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 14px 40px #00000020}.span3{grid-column:span 3}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}
+.card h3{margin:0 0 14px;font-size:15px}.muted{color:var(--muted)}.big{font-size:30px;font-weight:750}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.chips{display:flex;gap:7px;flex-wrap:wrap}.chip{padding:7px 10px;border-radius:10px;background:#181d28;color:#bfc8d8;font-size:12px}.chip.good{color:#baf2d5;background:#153126}.chip.warn{color:#ffe3a2;background:#302714}
+.progress{height:7px;background:#202531;border-radius:10px;overflow:hidden;margin-top:12px}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .3s}.list{display:grid;gap:8px}.item{padding:12px;border:1px solid var(--line);background:#11151d;border-radius:15px}.item b{font-size:14px}.item small{display:block;color:var(--muted);margin-top:4px}.item p{margin:8px 0 0;line-height:1.5}.empty{padding:28px 10px;text-align:center;color:var(--muted)}
+.primary{border:0;color:white;background:linear-gradient(135deg,#729eff,#8a70dc);padding:11px 15px;border-radius:13px;font-weight:650}.secondary{border:1px solid var(--line);background:#151923;color:#dce2ed;padding:10px 14px;border-radius:13px}.danger{border:1px solid #4b2929;background:#251416;color:#ffb2b2;padding:9px 12px;border-radius:12px}
+.bottom{position:fixed;z-index:20;bottom:14px;left:50%;transform:translateX(-50%);width:min(820px,calc(100% - 24px));min-height:68px;background:#10131bd9;border:1px solid #2b3140;border-radius:23px;backdrop-filter:blur(22px);display:flex;justify-content:space-around;align-items:center;box-shadow:0 20px 60px #0008;padding:5px}.nav{background:none;border:0;color:#778092;font-size:10px;display:flex;flex-direction:column;gap:3px;align-items:center;min-width:55px;padding:6px 0}.nav strong{font-size:18px;font-weight:500}.nav.active{color:#9bb9ff}.fab{width:49px;height:49px;border-radius:16px;border:0;background:#f2f4f8;color:#111;font-size:27px;box-shadow:0 8px 25px #0008;flex:none;display:grid;place-items:center}
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:12px 0 15px;gap:10px}.sectionTitle h2{margin:0;font-size:24px}.form{display:grid;gap:10px;margin-top:15px}.field{width:100%;border:1px solid var(--line);background:#0c0f15;color:var(--text);border-radius:13px;padding:12px;outline:none}.field:focus{border-color:#536eaa}.textarea{min-height:100px;resize:vertical}.search{margin-bottom:12px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.quote{border-left:3px solid var(--accent);padding-left:14px;color:#cdd5e2;line-height:1.55}.stat{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}.stat:last-child{border:0}
+.overlay{position:fixed;inset:0;background:#0009;z-index:40;display:none;align-items:flex-end;justify-content:center}.overlay.show{display:flex}.sheet{width:min(650px,100%);background:#11151d;border:1px solid var(--line);border-radius:27px 27px 0 0;padding:22px;max-height:90vh;overflow-y:auto;padding-bottom:calc(22px + env(safe-area-inset-bottom))}.sheet h2{margin-top:0}
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick button{padding:15px;border:1px solid var(--line);background:#171c26;color:#e8ecf3;border-radius:15px;text-align:left}.toast{position:fixed;z-index:60;left:50%;bottom:95px;transform:translateX(-50%) translateY(20px);opacity:0;background:#e9edf5;color:#111;padding:11px 16px;border-radius:12px;font-size:13px;transition:.25s;pointer-events:none}.toast.show{opacity:1;transform:translateX(-50%)}
+.barChart{display:flex;align-items:end;gap:8px;height:180px;padding:10px 2px 0}.barWrap{height:100%;flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:6px}.bar{width:100%;max-width:38px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,#86aaff,#8269dc);min-height:3px}.barLabel{font-size:10px;color:var(--muted)}.barValue{font-size:10px}.streak{font-size:40px;font-weight:850}.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:13px}.dayDot{text-align:center;font-size:10px;color:var(--muted)}.dayDot i{display:block;width:27px;height:27px;border-radius:50%;margin:0 auto 4px;background:#1b202b;border:1px solid #2a3140}.dayDot.on i{background:linear-gradient(135deg,#719eff,#8a70dc);border-color:#90a9e5}
+.miniActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.mini{font-size:11px;padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:#151923;color:#bdc6d5}.filterRow{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px}.filterRow button{white-space:nowrap}.taskDone{text-decoration:line-through;color:#778092}.check{width:25px;height:25px;border-radius:8px;border:1px solid #374154;background:#121722;display:grid;place-items:center;color:#fff;flex:none}.check.done{background:linear-gradient(135deg,#6fd7a3,#4a9e79);border-color:#6fd7a3}
+.rank{display:flex;align-items:center;gap:12px}.rankNo{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:#181d28;color:#bfc8d8;font-weight:700}.rankMain{flex:1}.rankBar{height:5px;background:#202531;border-radius:8px;margin-top:6px;overflow:hidden}.rankBar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}.activity{border-left:2px solid #36425b}.login{min-height:100vh;display:grid;place-items:center;padding:20px}.loginCard{width:min(440px,100%);background:linear-gradient(145deg,#11151d,#0d1016);border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:0 25px 80px #0008}.loginBrand{text-align:center;margin-bottom:24px}.loginBrand .orb{margin:0 auto 12px}.loginBrand h1{font-size:24px;margin:0}.loginBrand p{color:var(--muted);font-size:12px}.hidden{display:none!important}.hint{font-size:11px;color:var(--muted);line-height:1.5}
+@media(max-width:850px){.span3{grid-column:span 6}}@media(max-width:700px){.app{padding:15px 13px 105px}.hello h1{font-size:27px}.grid{grid-template-columns:1fr}.span3,.span4,.span6,.span8,.span12{grid-column:span 1}.card{border-radius:19px}.two,.three{grid-template-columns:1fr}.bottom{width:calc(100% - 16px);bottom:8px;padding:3px}.nav{min-width:40px;font-size:9px}.nav strong{font-size:16px}.quick{grid-template-columns:1fr}.loginCard{padding:22px}}
+</style>
+</head>
+<body>
+<div id="login" class="login">
+  <div class="loginCard">
+    <div class="loginBrand"><div class="orb">7</div><h1>The Seven Sleepers</h1><p>CONTROL PANEL</p></div>
+    <div class="form">
+      <input id="loginUser" class="field" autocomplete="username" placeholder="Kullanıcı adı">
+      <input id="loginPass" type="password" class="field" autocomplete="current-password" placeholder="Şifre">
+      <button class="primary" onclick="login()">Giriş yap</button>
+      <div id="loginError" class="hint"></div>
+    </div>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+<header class="top"><div class="brand"><div class="orb">7</div><div><b>THE SEVEN SLEEPERS</b><small>CONTROL PANEL</small></div></div><button class="iconbtn" onclick="openSettings()">⚙</button></header>
+
+<main id="today" class="view active">
+<div class="hello"><h1 id="greeting">Selam.</h1><p id="dateText"></p></div>
+<div class="grid">
+<section class="card span8"><div class="row"><h3>Bugünün özeti</h3><span class="chip" id="todayCount">0 kayıt</span></div><div class="list" id="todayList"></div></section>
+<section class="card span4"><h3>Gelişim serisi</h3><div class="streak" id="streakCount">0</div><p class="muted">günlük seri</p><div id="weekDots" class="days"></div></section>
+<section class="card span4"><h3>Haftalık hedef</h3><div class="big" id="weekActive">0/7</div><p class="muted">aktif gün</p><div class="progress"><i id="weekBar" style="width:0"></i></div></section>
+<section class="card span4"><h3>Planlar</h3><div class="big" id="planToday">0</div><p class="muted">bugün kalan görev</p><button class="secondary" style="width:100%;margin-top:8px" onclick="showView('plans')">Planlara git</button></section>
+<section class="card span4"><h3>Ortak görevler</h3><div class="big" id="sharedMini">0</div><p class="muted">aktif ortak görev</p><button class="secondary" style="width:100%;margin-top:8px" onclick="showView('tasks')">Görevlere git</button></section>
+<section class="card span6"><div class="row"><h3>Son kayıtların</h3><button class="secondary" onclick="showView('growth')">Tümü</button></div><div id="growthMini" class="list"></div></section>
+<section class="card span6"><h3>Topluluk</h3><div id="communityMini"></div></section>
+</div></main>
+
+<main id="growth" class="view"><div class="sectionTitle"><h2>Kişisel Gelişim</h2><button class="primary" onclick="openGrowth()">+ Yeni kayıt</button></div>
+<div class="grid"><section class="card span4"><h3>Okumalar</h3><div class="big" id="bookCount">0</div><p class="muted">okuma kaydı</p></section><section class="card span4"><h3>Dinlemeler</h3><div class="big" id="listenCount">0</div><p class="muted">dinleme kaydı</p></section><section class="card span4"><h3>Öğrendiklerim</h3><div class="big" id="learnCount">0</div><p class="muted">öğrenme kaydı</p></section>
+<section class="card span12"><h3>Bu haftanın gelişim grafiği</h3><div id="growthChart" class="barChart"></div><div class="row" style="margin-top:10px"><span class="muted" id="growthWeekTotal">0 kayıt</span><span class="chip" id="growthWeekBest">—</span></div></section>
+<section class="card span12"><div class="row"><h3>Gelişim günlüğü</h3><span class="muted">Kendi kayıtların</span></div><input class="field search" id="growthSearch" oninput="renderGrowth()" placeholder="Kayıtlarda ara..."><div id="growthList" class="list"></div></section></div></main>
+
+<main id="community" class="view"><div class="sectionTitle"><h2>Topluluk</h2><span class="chip">7 kişi</span></div>
+<div class="grid"><section class="card span4"><h3>Bu hafta toplam</h3><div class="big" id="cTotal">0</div><p class="muted">gelişim kaydı</p></section><section class="card span4"><h3>En aktif</h3><div class="big" id="cBest">—</div><p class="muted" id="cBestMeta">—</p></section><section class="card span4"><h3>Ortak görev ilerlemesi</h3><div class="big" id="cShared">0%</div><p class="muted">aktif görevlerin ortalaması</p></section>
+<section class="card span6"><h3>Haftalık sıralama</h3><div id="communityRanking" class="list"></div></section>
+<section class="card span6"><h3>Aktivite grafiği</h3><div id="communityChart" class="barChart"></div></section>
+<section class="card span12"><div class="row"><h3>Topluluk akışı</h3><span class="muted">Paylaşıma açık kayıtlar</span></div><div id="communityFeed" class="list"></div></section></div></main>
+
+<main id="tasks" class="view"><div class="sectionTitle"><h2>Ortak Görevler</h2><button class="primary" onclick="openSharedTask()">+ Ortak görev</button></div>
+<div class="grid"><section class="card span4"><h3>Aktif görev</h3><div class="big" id="sharedCount">0</div><p class="muted">topluluk görevi</p></section><section class="card span4"><h3>Toplam ilerleme</h3><div class="big" id="sharedPercent">0%</div><p class="muted">aktif görev ortalaması</p></section><section class="card span4"><h3>Benim katkım</h3><div class="big" id="myContribution">0</div><p class="muted">tamamlanan miktar</p></section>
+<section class="card span12"><div id="sharedTasksList" class="list"></div></section></div></main>
+
+<main id="plans" class="view"><div class="sectionTitle"><h2>Planlar</h2><button class="primary" onclick="openPlan()">+ Yeni plan</button></div><div class="grid"><section class="card span4"><h3>Bugün</h3><div class="big" id="plansOpenToday">0</div><p class="muted">tamamlanmamış</p></section><section class="card span4"><h3>Haftalık tamamlanan</h3><div class="big" id="plansDoneWeek">0</div><p class="muted">görev</p></section><section class="card span4"><h3>Plan serisi</h3><div class="big" id="planStreak">0</div><p class="muted">aktif gün</p></section><section class="card span12"><div class="filterRow"><button class="mini" onclick="setPlanFilter('all')">Tümü</button><button class="mini" onclick="setPlanFilter('today')">Bugün</button><button class="mini" onclick="setPlanFilter('open')">Açık</button><button class="mini" onclick="setPlanFilter('done')">Tamamlanan</button></div><div id="plansList" class="list"></div></section></div></main>
+
+<main id="analysis" class="view"><div class="sectionTitle"><h2>Haftalık Analiz</h2></div><div class="grid"><section class="card span6"><h3>Haftanın özeti</h3><div class="stat"><span>Aktif gün</span><b id="aActive">0/7</b></div><div class="stat"><span>Gelişim kaydı</span><b id="aGrowth">0</b></div><div class="stat"><span>Tamamlanan plan</span><b id="aPlans">0</b></div><div class="stat"><span>Ortak görev katkısı</span><b id="aShared">0</b></div></section><section class="card span6"><h3>Bu haftanın mesajı</h3><div class="quote" id="analysisMessage">Düzenli küçük adımlar, birlikte yüründüğünde daha anlamlı hale gelir.</div></section><section class="card span12"><h3>Başarımlar</h3><div id="achievements" class="list"></div></section></div></main>
+</div>
+
+<nav id="nav" class="bottom hidden"><button class="nav active" data-view="today" onclick="showView('today',this)"><strong>⌂</strong>Bugün</button><button class="nav" data-view="growth" onclick="showView('growth',this)"><strong>◫</strong>Gelişim</button><button class="nav" data-view="community" onclick="showView('community',this)"><strong>◎</strong>Topluluk</button><button class="fab" onclick="openQuick()">+</button><button class="nav" data-view="tasks" onclick="showView('tasks',this)"><strong>✓</strong>Görevler</button><button class="nav" data-view="plans" onclick="showView('plans',this)"><strong>☷</strong>Planlar</button><button class="nav" data-view="analysis" onclick="showView('analysis',this)"><strong>◈</strong>Analiz</button></nav>
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div><div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL='https://tlqfrsmwanrodyaaxtbo.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_ouK1_ez3_0S5kPyBeATTug_p6yWaxQ7';
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+
+let me=null, profile=null, planFilter='all', cache={growth:[],notes:[],tasks:[],shared:[],contrib:[]};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const nowISO=()=>new Date().toISOString();
+function dateKey(v){const d=new Date(v);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function addDays(k,n){const d=new Date(k+'T00:00:00');d.setDate(d.getDate()+n);return dateKey(d)}
+function monday(k=dateKey(new Date())){const d=new Date(k+'T00:00:00'),day=d.getDay();d.setDate(d.getDate()+(day===0?-6:1-day));return dateKey(d)}
+function weekKeys(){const m=monday();return Array.from({length:7},(_,i)=>addDays(m,i))}
+function fmtDate(v){return new Date(v).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'})}
+function fmtTime(v){return new Date(v).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}
+function toast(t){const x=$('toast');x.textContent=t;x.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>x.classList.remove('show'),1900)}
+function openSheet(html){$('sheet').innerHTML=html;$('overlay').classList.add('show')}
+function closeSheet(){$('overlay').classList.remove('show')}
+function showView(id,btn){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');else document.querySelector(`[data-view="${id}"]`)?.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});renderAll()}
+function greeting(){const h=new Date().getHours();return h<6?'Gece sessizliği,  ':h<12?'Günaydın,  ':h<18?'İyi günler,  ':'İyi akşamlar,  '}
+
+async function login(){
+  const u=$('loginUser').value.trim().toLowerCase(), p=$('loginPass').value;
+  if(!u||!p)return $('loginError').textContent='Kullanıcı adı ve şifre gerekli.';
+  if(SUPABASE_URL.startsWith('YOUR_'))return $('loginError').textContent='Önce index.html içindeki Supabase URL ve anon key alanlarını doldur.';
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email:`${u}@seven-sleepers.local`,password:p});
+  if(error)return $('loginError').textContent='Giriş başarısız. Kullanıcı adı veya şifreyi kontrol et.';
+  me=data.user;await boot();
+}
+async function logout(){await supabaseClient.auth.signOut();location.reload()}
+async function boot(){
+  const {data:{user}}=await supabaseClient.auth.getUser(); if(!user)return;
+  me=user;
+  const {data:p,error}=await supabaseClient.from('profiles').select('*').eq('id',me.id).single();
+  if(error||!p){$('loginError').textContent='Profil bulunamadı.';return}
+  profile=p;$('login').classList.add('hidden');$('app').classList.remove('hidden');$('nav').classList.remove('hidden');await loadData();renderAll();
+}
+async function loadData(){
+  const [g,n,t,s,c]=await Promise.all([
+    supabaseClient.from('growth_records').select('*').eq('user_id',me.id).order('created_at',{ascending:false}),
+    supabaseClient.from('notes').select('*').eq('user_id',me.id).order('created_at',{ascending:false}),
+    supabaseClient.from('personal_tasks').select('*').eq('user_id',me.id).order('due_date',{ascending:true}),
+    supabaseClient.from('shared_tasks').select('*').eq('status','active').order('created_at',{ascending:false}),
+    supabaseClient.from('shared_task_members').select('*').eq('user_id',me.id)
+  ]);
+  cache.growth=g.data||[];cache.notes=n.data||[];cache.tasks=t.data||[];cache.shared=s.data||[];cache.contrib=c.data||[];
+}
+async function refresh(){await loadData();renderAll()}
+
+function openQuick(){openSheet(`<h2>Hızlı kayıt</h2><div class="quick">
+<button onclick="closeSheet();openGrowth()">📚<br><b>Gelişim kaydı</b><small class="muted">Okuma, dinleme, öğrenme</small></button>
+<button onclick="closeSheet();openNote()">📝<br><b>Not</b><small class="muted">Kişisel not</small></button>
+<button onclick="closeSheet();openPlan()">✓<br><b>Yeni plan</b><small class="muted">Kişisel görev</small></button>
+<button onclick="closeSheet();openSharedTask()">🤝<br><b>Ortak görev</b><small class="muted">Topluluk için görev</small></button>
+</div>`)}
+function openGrowth(){openSheet(`<h2>Gelişim kaydı</h2><div class="form">
+<select id="gType" class="field"><option value="book">📚 Kitap / Okuma</option><option value="listen">🎧 Dinleme</option><option value="learn">🧠 Öğrenme</option></select>
+<input id="gTitle" class="field" placeholder="Örn. Risale-i Nur - 3. Lem'a">
+<input id="gSource" class="field" placeholder="Kaynak / yazar (opsiyonel)">
+<textarea id="gBody" class="field textarea" placeholder="Not / özet (opsiyonel)"></textarea>
+<label class="chip"><input id="gPublic" type="checkbox" checked> Toplulukta göster</label>
+<button class="primary" onclick="addGrowth()">Kaydet</button></div>`)}
+async function addGrowth(){
+  const title=$('gTitle').value.trim();if(!title)return toast('Başlık gerekli.');
+  const {error}=await supabaseClient.from('growth_records').insert({user_id:me.id,type:$('gType').value,title,source:$('gSource').value.trim()||null,body:$('gBody').value.trim()||null,is_public:$('gPublic').checked});
+  if(error)return toast('Kayıt eklenemedi.');
+  closeSheet();await refresh();toast('Gelişim kaydı eklendi.');
+}
+function renderGrowth(){
+  const all=cache.growth,q=($('growthSearch')?.value||'').toLowerCase();
+  $('bookCount').textContent=all.filter(x=>x.type==='book').length;$('listenCount').textContent=all.filter(x=>x.type==='listen').length;$('learnCount').textContent=all.filter(x=>x.type==='learn').length;
+  const a=all.filter(x=>(x.title+' '+(x.source||'')+' '+(x.body||'')).toLowerCase().includes(q));
+  $('growthList').innerHTML=a.length?a.map(x=>`<div class="item"><div class="row"><div><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}</b><small>${esc(x.source||'Kişisel kayıt')} · ${fmtDate(x.created_at)} · ${fmtTime(x.created_at)}</small></div><span class="chip">${x.is_public?'Topluluk':'Özel'}</span></div>${x.body?`<p>${esc(x.body).replace(/\n/g,'<br>')}</p>`:''}<div class="miniActions"><button class="mini" onclick="deleteGrowth('${x.id}')">Sil</button></div></div>`).join(''):'<div class="empty">Henüz gelişim kaydı yok.</div>';
+  renderGrowthChart();
+}
+function renderGrowthChart(){
+  const keys=weekKeys(),counts=keys.map(k=>cache.growth.filter(x=>dateKey(x.created_at)===k).length),max=Math.max(1,...counts);
+  $('growthChart').innerHTML=counts.map((c,i)=>`<div class="barWrap"><span class="barValue">${c||''}</span><div class="bar" style="height:${Math.max(3,c/max*135)}px"></div><span class="barLabel">${['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'][i]}</span></div>`).join('');
+  $('growthWeekTotal').textContent=`${counts.reduce((a,b)=>a+b,0)} kayıt`;const best=Math.max(...counts);$('growthWeekBest').textContent=best?`${['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'][counts.indexOf(best)]}: ${best} kayıt`:'Henüz kayıt yok';
+}
+async function deleteGrowth(id){if(!confirm('Bu kayıt silinsin mi?'))return;const {error}=await supabaseClient.from('growth_records').delete().eq('id',id).eq('user_id',me.id);if(error)return toast('Silinemedi.');await refresh();toast('Silindi.')}
+function openNote(){openSheet(`<h2>Yeni not</h2><div class="form"><input id="nTitle" class="field" placeholder="Başlık"><textarea id="nBody" class="field textarea" placeholder="Notun..."></textarea><button class="primary" onclick="addNote()">Kaydet</button></div>`)}
+async function addNote(){const title=$('nTitle').value.trim(),body=$('nBody').value.trim();if(!title&&!body)return toast('Bir şey yazmalısın.');const {error}=await supabaseClient.from('notes').insert({user_id:me.id,title:title||'Not',body});if(error)return toast('Not eklenemedi.');closeSheet();await refresh();toast('Not kaydedildi.')}
+
+function openPlan(){openSheet(`<h2>Yeni plan</h2><div class="form"><input id="tTitle" class="field" placeholder="Ne yapacaksın?"><textarea id="tDesc" class="field textarea" style="min-height:70px" placeholder="Kısa not (opsiyonel)"></textarea><div class="two"><input id="tDate" type="date" class="field" value="${dateKey(new Date())}"><input id="tTime" type="time" class="field"></div><button class="primary" onclick="addPlan()">Planı ekle</button></div>`)}
+async function addPlan(){const title=$('tTitle').value.trim();if(!title)return toast('Plan adı gerekli.');const {error}=await supabaseClient.from('personal_tasks').insert({user_id:me.id,title,description:$('tDesc').value.trim()||null,due_date:$('tDate').value||dateKey(new Date()),due_time:$('tTime').value||null});if(error)return toast('Plan eklenemedi.');closeSheet();await refresh();toast('Plan eklendi.')}
+async function togglePlan(id,done){const {error}=await supabaseClient.from('personal_tasks').update({completed:done,completed_at:done?nowISO():null}).eq('id',id).eq('user_id',me.id);if(error)return toast('Güncellenemedi.');await refresh()}
+function setPlanFilter(f){planFilter=f;renderPlans()}
+function renderPlans(){
+  const today=dateKey(new Date());let a=[...cache.tasks];if(planFilter==='today')a=a.filter(t=>t.due_date===today);if(planFilter==='open')a=a.filter(t=>!t.completed);if(planFilter==='done')a=a.filter(t=>t.completed);a.sort((x,y)=>(x.completed-y.completed)||x.due_date.localeCompare(y.due_date));
+  $('plansList').innerHTML=a.length?a.map(t=>`<div class="item"><div class="row"><div class="row" style="justify-content:flex-start"><button class="check ${t.completed?'done':''}" onclick="togglePlan('${t.id}',${!t.completed})">${t.completed?'✓':''}</button><div><b class="${t.completed?'taskDone':''}">${esc(t.title)}</b><small>${t.due_date===today?'Bugün':fmtDate(t.due_date)}${t.due_time?' · '+esc(t.due_time):''}</small></div></div></div></div>`).join(''):'<div class="empty">Bu filtrede plan yok.</div>';
+  $('plansOpenToday').textContent=cache.tasks.filter(t=>t.due_date===today&&!t.completed).length;$('plansDoneWeek').textContent=cache.tasks.filter(t=>t.completed_at&&weekKeys().includes(dateKey(t.completed_at))).length;$('planStreak').textContent=currentStreak();
+}
+
+function openSharedTask(){
+ openSheet(`<h2>Yeni ortak görev</h2><div class="form"><input id="sTitle" class="field" placeholder="Örn. Cevşen"><textarea id="sDesc" class="field textarea" placeholder="Açıklama (opsiyonel)"></textarea><div class="two"><input id="sAmount" type="number" min="1" step="0.01" class="field" placeholder="Toplam miktar"><input id="sUnit" class="field" placeholder="Birim: Bab, sayfa, tekrar..."></div><button class="primary" onclick="addSharedTask()">Görevi oluştur</button></div>`);
+}
+async function addSharedTask(){
+ const title=$('sTitle').value.trim(),amount=Number($('sAmount').value),unit=$('sUnit').value.trim();if(!title||!amount||!unit)return toast('Başlık, miktar ve birim gerekli.');
+ const {data,error}=await supabaseClient.from('shared_tasks').insert({title,description:$('sDesc').value.trim()||null,total_amount:amount,unit,created_by:me.id}).select().single();
+ if(error)return toast('Ortak görev oluşturulamadı.');
+ await supabaseClient.from('shared_task_members').insert({shared_task_id:data.id,user_id:me.id,assigned_amount:0,completed_amount:0});
+ closeSheet();await refresh();toast('Ortak görev oluşturuldu.');
+}
+async function openContribution(taskId){
+ const task=cache.shared.find(x=>x.id===taskId);if(!task)return;
+ const {data:members}=await supabaseClient.from('shared_task_members').select('*,profiles(display_name,username)').eq('shared_task_id',taskId);
+ const mine=(members||[]).find(x=>x.user_id===me.id);
+ openSheet(`<h2>${esc(task.title)}</h2><p class="muted">${esc(task.description||'')} · Hedef: ${task.total_amount} ${esc(task.unit)}</p><div class="form"><div class="two"><input id="claimAmount" type="number" min="0" step="0.01" value="${mine?.assigned_amount||0}" class="field" placeholder="Payın"><button class="secondary" onclick="claimTask('${task.id}')">Payımı kaydet</button></div><p class="hint">Payını aldıktan sonra tamamladığın miktarı ayrıca işaretleyebilirsin.</p><input id="completeAmount" type="number" min="0" step="0.01" value="${mine?.completed_amount||0}" class="field" placeholder="Tamamlanan miktar"><button class="primary" onclick="completeTask('${task.id}')">Tamamladım</button></div>`);
+}
+async function claimTask(id){const amount=Number($('claimAmount').value)||0;let {data}=await supabaseClient.from('shared_task_members').select('id').eq('shared_task_id',id).eq('user_id',me.id).maybeSingle();let error;if(data){({error}=await supabaseClient.from('shared_task_members').update({assigned_amount:amount}).eq('id',data.id))}else{({error}=await supabaseClient.from('shared_task_members').insert({shared_task_id:id,user_id:me.id,assigned_amount:amount,completed_amount:0}))}if(error)return toast('Pay kaydedilemedi.');await refresh();toast('Payın kaydedildi.')}
+async function completeTask(id){const amount=Number($('completeAmount').value)||0;let {data}=await supabaseClient.from('shared_task_members').select('id').eq('shared_task_id',id).eq('user_id',me.id).maybeSingle();let error;if(data){({error}=await supabaseClient.from('shared_task_members').update({completed_amount:amount}).eq('id',data.id))}else{({error}=await supabaseClient.from('shared_task_members').insert({shared_task_id:id,user_id:me.id,assigned_amount:amount,completed_amount:amount}))}if(error)return toast('Tamamlanamadı.');closeSheet();await refresh();toast('Katkın güncellendi.')}
+async function renderSharedTasks(){
+ const {data:rows}=await supabaseClient.from('shared_task_members').select('*');const members=rows||[];
+ let myTotal=0;
+ $('sharedTasksList').innerHTML=cache.shared.length?cache.shared.map(t=>{const ms=members.filter(x=>x.shared_task_id===t.id),done=ms.reduce((a,x)=>a+Number(x.completed_amount||0),0),pct=Math.min(100,done/Number(t.total_amount)*100);myTotal+=Number(ms.find(x=>x.user_id===me.id)?.completed_amount||0);return `<div class="item"><div class="row"><div><b>🤝 ${esc(t.title)}</b><small>${done} / ${t.total_amount} ${esc(t.unit)}</small></div><button class="secondary" onclick="openContribution('${t.id}')">Katıl</button></div><div class="progress"><i style="width:${pct}%"></i></div><small>${Math.round(pct)}% tamamlandı · ${ms.length} kişi katkı verdi</small></div>`}).join(''):'<div class="empty">Henüz ortak görev yok.</div>';
+ $('sharedCount').textContent=cache.shared.length;$('myContribution').textContent=myTotal;
+ let avg=0;if(cache.shared.length){let ps=cache.shared.map(t=>{const ms=members.filter(x=>x.shared_task_id===t.id),d=ms.reduce((a,x)=>a+Number(x.completed_amount||0),0);return Math.min(100,d/Number(t.total_amount)*100)});avg=Math.round(ps.reduce((a,b)=>a+b,0)/ps.length)}$('sharedPercent').textContent=avg+'%';
+}
+async function communityData(){
+ const {data:g}=await supabaseClient.from('growth_records').select('id,user_id,type,title,source,body,created_at,is_public,profiles(display_name,username)').eq('is_public',true).order('created_at',{ascending:false}).limit(100);
+ return g||[];
+}
+async function renderCommunity(){
+ const feed=await communityData(),keys=weekKeys();const weekly=profileList().map(p=>({id:p.id,name:p.display_name,count:feed.filter(x=>x.user_id===p.id&&keys.includes(dateKey(x.created_at))).length}));
+ weekly.sort((a,b)=>b.count-a.count);const total=weekly.reduce((a,b)=>a+b.count,0);
+ $('cTotal').textContent=total;$('cBest').textContent=weekly[0]?.name||'—';$('cBestMeta').textContent=weekly[0]?`${weekly[0].count} kayıt`:'Henüz veri yok';
+ $('communityRanking').innerHTML=weekly.map((x,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div class="rankMain"><div class="row"><b>${esc(x.name)}</b><span class="chip">${x.count} kayıt</span></div><div class="rankBar"><i style="width:${total?x.count/Math.max(1,weekly[0].count)*100:0}%"></i></div></div></div>`).join('');
+ const counts=weekly.map(x=>x.count),max=Math.max(1,...counts);$('communityChart').innerHTML=weekly.map(x=>`<div class="barWrap"><span class="barValue">${x.count}</span><div class="bar" style="height:${Math.max(3,x.count/max*135)}px"></div><span class="barLabel">${esc(x.name)}</span></div>`).join('');
+ $('communityFeed').innerHTML=feed.length?feed.slice(0,30).map(x=>`<div class="item activity" onclick="openCommunityDetail('${x.id}')"><div class="row"><div><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.profiles?.display_name||'Kullanıcı')}</b><small>${esc(x.title)}${x.source?' · '+esc(x.source):''}</small></div><span class="chip">${fmtDate(x.created_at)}</span></div>${x.body?`<p><b>Not:</b> ${esc(x.body.length>150?x.body.slice(0,150)+'…':x.body)}</p>`:'<p class="muted">Not eklenmemiş.</p>'}</div>`).join(''):'<div class="empty">Toplulukta henüz paylaşılmış kayıt yok.</div>';
+ window._communityFeed=feed;
+}
+function openCommunityDetail(id){const x=(window._communityFeed||[]).find(a=>a.id===id);if(!x)return;openSheet(`<h2>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.profiles?.display_name||'Kullanıcı')}</h2><div class="item"><b>${esc(x.title)}</b><small>${esc(x.source||'')} · ${fmtDate(x.created_at)}</small>${x.body?`<p><b>Not / Özet:</b><br>${esc(x.body).replace(/\n/g,'<br>')}</p>`:'<p class="muted">Bu kayda özet veya not eklenmemiş.</p>'}</div>`)}
+function profileList(){return window._profiles||[profile]}
+async function loadProfiles(){const {data}=await supabaseClient.from('profiles').select('id,username,display_name').order('display_name');window._profiles=data||[profile]}
+async function renderCommunitySafe(){await loadProfiles();await renderCommunity()}
+async function currentSharedProgress(){const {data}=await supabaseClient.from('shared_task_members').select('shared_task_id,completed_amount');const rows=data||[];if(!cache.shared.length)return 0;const p=cache.shared.map(t=>{const d=rows.filter(x=>x.shared_task_id===t.id).reduce((a,x)=>a+Number(x.completed_amount||0),0);return Math.min(100,d/Number(t.total_amount)*100)});return Math.round(p.reduce((a,b)=>a+b,0)/p.length)}
+function currentStreak(){let k=dateKey(new Date()),streak=0;const has=d=>cache.growth.some(x=>dateKey(x.created_at)===d)||cache.tasks.some(x=>x.completed_at&&dateKey(x.completed_at)===d);if(!has(k))k=addDays(k,-1);while(has(k)){streak++;k=addDays(k,-1)}return streak}
+function renderToday(){
+ $('dateText').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long'});$('greeting').textContent=`${greeting()} ${esc(profile?.display_name||'')}`;
+ const k=dateKey(new Date()),g=cache.growth.filter(x=>dateKey(x.created_at)===k),n=cache.notes.filter(x=>dateKey(x.created_at)===k),t=cache.tasks.filter(x=>x.due_date===k);$('todayCount').textContent=`${g.length+n.length+t.length} kayıt`;
+ const items=[...n.map(x=>`📝 ${esc(x.title)}`),...g.map(x=>`${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}`),...t.slice(0,3).map(x=>`${x.completed?'☑️':'⬜'} ${esc(x.title)}`)];$('todayList').innerHTML=items.length?items.slice(0,7).map(x=>`<div class="item">${x}</div>`).join(''):'<div class="empty">Bugün henüz kayıt yok.</div>';
+ const streak=currentStreak(),active=weekKeys().filter(x=>cache.growth.some(g=>dateKey(g.created_at)===x)||cache.tasks.some(t=>t.completed_at&&dateKey(t.completed_at)===x));$('streakCount').textContent=streak;$('weekActive').textContent=`${active.length}/7`;$('weekBar').style.width=active.length/7*100+'%';$('planToday').textContent=cache.tasks.filter(t=>t.due_date===k&&!t.completed).length;$('sharedMini').textContent=cache.shared.length;$('weekDots').innerHTML=weekKeys().map(x=>`<div class="dayDot ${active.includes(x)?'on':''}"><i></i>${new Date(x+'T00:00:00').toLocaleDateString('tr-TR',{weekday:'narrow'})}</div>`).join('');
+ $('growthMini').innerHTML=cache.growth.slice(0,4).map(x=>`<div class="item"><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}</b><small>${fmtDate(x.created_at)}${x.body?' · not/özet var':''}</small></div>`).join('')||'<div class="empty">Henüz gelişim kaydı yok.</div>';
+ $('communityMini').innerHTML='<div class="quote">Topluluk sayfasında haftalık sıralama, grafikler ve paylaşıma açık kayıtlar görünür.</div>';
+}
+async function renderAnalysis(){
+ const keys=weekKeys(),g=cache.growth.filter(x=>keys.includes(dateKey(x.created_at))),done=cache.tasks.filter(x=>x.completed_at&&keys.includes(dateKey(x.completed_at)));$('aActive').textContent=`${new Set([...g.map(x=>dateKey(x.created_at)),...done.map(x=>dateKey(x.completed_at))]).size}/7`;$('aGrowth').textContent=g.length;$('aPlans').textContent=done.length;$('aShared').textContent=cache.contrib.reduce((a,x)=>a+Number(x.completed_amount||0),0);$('analysisMessage').textContent=g.length>=5?'Bu hafta düzenli bir tempo oluşmuş. Aynı istikrarı korumaya odaklan.':g.length?'Birkaç düzenli kayıt bile haftanın yönünü değiştirebilir.':'İlk kaydını yaparak haftanın ritmini başlat.';
+ $('achievements').innerHTML=[currentStreak()>=3?'🌱 3 günlük seri':null,g.length>=10?'📚 10 gelişim kaydı':null].filter(Boolean).map(x=>`<div class="item"><b>${x}</b><small>Açılan başarı</small></div>`).join('')||'<div class="empty">Henüz başarı yok.</div>';
+}
+async function renderAll(){
+ renderToday();renderGrowth();renderPlans();await renderSharedTasks();await renderAnalysis();
+ const pct=await currentSharedProgress();$('cShared').textContent=pct+'%';
+ if(document.getElementById('community')?.classList.contains('active'))await renderCommunitySafe();
+}
+async function openSettings(){openSheet(`<h2>Hesap</h2><p class="muted">${esc(profile?.display_name||'')} · @${esc(profile?.username||'')}</p><button class="danger" style="width:100%;margin-top:10px" onclick="logout()">Çıkış yap</button>`)}
+(async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session)await boot()})();
+</script>
+</body>
+</html>
