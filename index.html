@@ -26,6 +26,52 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:1
 .miniActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.mini{font-size:11px;padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:#151923;color:#bdc6d5}.filterRow{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px}.filterRow button{white-space:nowrap}.taskDone{text-decoration:line-through;color:#778092}.check{width:25px;height:25px;border-radius:8px;border:1px solid #374154;background:#121722;display:grid;place-items:center;color:#fff;flex:none}.check.done{background:linear-gradient(135deg,#6fd7a3,#4a9e79);border-color:#6fd7a3}
 .rank{display:flex;align-items:center;gap:12px}.rankNo{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:#181d28;color:#bfc8d8;font-weight:700}.rankMain{flex:1}.rankBar{height:5px;background:#202531;border-radius:8px;margin-top:6px;overflow:hidden}.rankBar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}.activity{border-left:2px solid #36425b}.login{min-height:100vh;display:grid;place-items:center;padding:20px}.loginCard{width:min(440px,100%);background:linear-gradient(145deg,#11151d,#0d1016);border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:0 25px 80px #0008}.loginBrand{text-align:center;margin-bottom:24px}.loginBrand .orb{margin:0 auto 12px}.loginBrand h1{font-size:24px;margin:0}.loginBrand p{color:var(--muted);font-size:12px}.hidden{display:none!important}.hint{font-size:11px;color:var(--muted);line-height:1.5}
 @media(max-width:850px){.span3{grid-column:span 6}}@media(max-width:700px){.app{padding:15px 13px 105px}.hello h1{font-size:27px}.grid{grid-template-columns:1fr}.span3,.span4,.span6,.span8,.span12{grid-column:span 1}.card{border-radius:19px}.two,.three{grid-template-columns:1fr}.bottom{width:calc(100% - 16px);bottom:8px;padding:3px}.nav{min-width:40px;font-size:9px}.nav strong{font-size:16px}.quick{grid-template-columns:1fr}.loginCard{padding:22px}}
+
+/* --- Visual polish: interaction layer only --- */
+::selection{background:#789cff44;color:#fff}
+body{overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(circle at 15% 35%,#6d8cff0d,transparent 28%),radial-gradient(circle at 85% 65%,#9a7cff0a,transparent 30%)}
+.card,.item,.quick button,.iconbtn,.secondary,.mini,.nav,.fab,.primary,.danger,.field,.chip{transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease,opacity .18s ease}
+.card:hover{transform:translateY(-2px);border-color:#35405a;box-shadow:0 18px 48px #0000002e}
+.item{position:relative;overflow:hidden}
+.item::after,.quick button::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 25%,#ffffff09 50%,transparent 75%);transform:translateX(-120%);transition:transform .55s ease;pointer-events:none}
+.item:hover::after,.quick button:hover::after{transform:translateX(120%)}
+.item:hover{transform:translateY(-1px);border-color:#30394d;background:#131822}
+.primary:hover{transform:translateY(-1px);box-shadow:0 10px 28px #6f8fff30;filter:brightness(1.06)}
+.primary:active,.secondary:active,.danger:active,.iconbtn:active,.mini:active,.fab:active,.nav:active,.quick button:active{transform:scale(.96)}
+.secondary:hover,.mini:hover,.iconbtn:hover{border-color:#46536d;background:#1a202c;color:#fff}
+.danger:hover{border-color:#713c3c;background:#30191b}
+.nav{position:relative}
+.nav:hover{color:#c5d3f5;transform:translateY(-2px)}
+.nav strong{transition:transform .2s ease}
+.nav:hover strong{transform:scale(1.12)}
+.nav.active::after{content:"";position:absolute;bottom:-1px;width:4px;height:4px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+.fab{transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.fab:hover{transform:translateY(-3px) rotate(2deg);box-shadow:0 14px 32px #000a;background:#fff}
+.field{transition:border-color .2s ease,box-shadow .2s ease,background .2s ease}
+.field:hover{border-color:#34405a}
+.field:focus{border-color:#6f8fcb;box-shadow:0 0 0 3px #6f8fcb18;background:#0e121a}
+.check{transition:transform .16s ease,background .18s ease,border-color .18s ease}
+.check:hover{transform:scale(1.06);border-color:#6078a7}
+.chip{transition:background .18s ease,transform .18s ease}
+.chip:hover{transform:translateY(-1px)}
+.progress i,.rankBar i,.bar{box-shadow:0 0 14px #789cff22}
+.bar{transition:height .45s cubic-bezier(.2,.8,.2,1),filter .2s ease}
+.barWrap:hover .bar{filter:brightness(1.15);box-shadow:0 0 18px #789cff38}
+.dayDot i{transition:transform .2s ease,box-shadow .2s ease}
+.dayDot:hover i{transform:scale(1.08);box-shadow:0 0 14px #789cff25}
+.overlay{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.sheet{animation:sheetIn .24s cubic-bezier(.2,.8,.2,1)}
+@keyframes sheetIn{from{opacity:.5;transform:translateY(24px)}to{opacity:1;transform:none}}
+.loginCard{animation:loginIn .55s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden}
+.loginCard::before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-100px;top:-120px;background:#789cff12;filter:blur(4px);pointer-events:none}
+.loginBrand .orb{animation:orbPulse 4s ease-in-out infinite}
+@keyframes orbPulse{0%,100%{box-shadow:0 0 28px #708fff44}50%{box-shadow:0 0 40px #8b75ff55}}
+@keyframes loginIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.toast{box-shadow:0 10px 35px #0008;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #789cff88;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+
 </style>
 </head>
 <body>
@@ -80,8 +126,8 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:1
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div><div class="toast" id="toast"></div>
 
 <script>
-const SUPABASE_URL='https://tlqfrsmwanrodyaaxtbo.supabase.co';
-const SUPABASE_ANON_KEY='sb_publishable_ouK1_ez3_0S5kPyBeATTug_p6yWaxQ7';
+const SUPABASE_URL='YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY='YOUR_SUPABASE_ANON_KEY';
 const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
 let me=null, profile=null, planFilter='all', cache={growth:[],notes:[],tasks:[],shared:[],contrib:[]};
@@ -98,7 +144,7 @@ function toast(t){const x=$('toast');x.textContent=t;x.classList.add('show');cle
 function openSheet(html){$('sheet').innerHTML=html;$('overlay').classList.add('show')}
 function closeSheet(){$('overlay').classList.remove('show')}
 function showView(id,btn){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');else document.querySelector(`[data-view="${id}"]`)?.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});renderAll()}
-function greeting(){const h=new Date().getHours();return h<6?'Gece sessizliği,  ':h<12?'Günaydın,  ':h<18?'İyi günler,  ':'İyi akşamlar,  '}
+function greeting(){const h=new Date().getHours();return h<6?'Gece sessizliği.':h<12?'Günaydın.':h<18?'İyi günler.':'İyi akşamlar.'}
 
 async function login(){
   const u=$('loginUser').value.trim().toLowerCase(), p=$('loginPass').value;
