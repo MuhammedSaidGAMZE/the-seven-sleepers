@@ -4,165 +4,639 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>The Seven Sleepers — Control Panel</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--bg:#080a0f;--panel:#10131a;--panel2:#151923;--line:#252b38;--text:#f3f5f8;--muted:#8f98a8;--accent:#78a7ff;--accent2:#9a7cff;--good:#6fd7a3;--warn:#f2c66d;--danger:#ef7777;--radius:22px}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;background:radial-gradient(circle at 70% -10%,#17213b 0,#080a0f 38%);color:var(--text)}
-button,input,textarea,select{font:inherit}button{cursor:pointer}.app{max-width:1100px;margin:auto;min-height:100vh;padding:18px 18px 112px}
-.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.brand{display:flex;gap:11px;align-items:center}.orb{width:38px;height:38px;border-radius:13px;background:linear-gradient(145deg,#8db4ff,#8063dd);box-shadow:0 0 28px #708fff44;display:grid;place-items:center;font-weight:800}.brand b{font-size:15px;letter-spacing:.4px}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.iconbtn{border:1px solid var(--line);background:#11151e;color:#dce2ed;border-radius:13px;width:42px;height:42px;display:inline-grid;place-items:center}
-.view{display:none;animation:in .25s ease}.view.active{display:block}@keyframes in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-.hello{margin:12px 0 22px}.hello h1{font-size:32px;margin:0 0 5px}.hello p{margin:0;color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}.card{background:linear-gradient(145deg,#11151d,#0d1016);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 14px 40px #00000020}.span3{grid-column:span 3}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}
-.card h3{margin:0 0 14px;font-size:15px}.muted{color:var(--muted)}.big{font-size:30px;font-weight:750}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.chips{display:flex;gap:7px;flex-wrap:wrap}.chip{padding:7px 10px;border-radius:10px;background:#181d28;color:#bfc8d8;font-size:12px}.chip.good{color:#baf2d5;background:#153126}.chip.warn{color:#ffe3a2;background:#302714}
-.progress{height:7px;background:#202531;border-radius:10px;overflow:hidden;margin-top:12px}.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .3s}.list{display:grid;gap:8px}.item{padding:12px;border:1px solid var(--line);background:#11151d;border-radius:15px}.item b{font-size:14px}.item small{display:block;color:var(--muted);margin-top:4px}.item p{margin:8px 0 0;line-height:1.5}.empty{padding:28px 10px;text-align:center;color:var(--muted)}
-.primary{border:0;color:white;background:linear-gradient(135deg,#729eff,#8a70dc);padding:11px 15px;border-radius:13px;font-weight:650}.secondary{border:1px solid var(--line);background:#151923;color:#dce2ed;padding:10px 14px;border-radius:13px}.danger{border:1px solid #4b2929;background:#251416;color:#ffb2b2;padding:9px 12px;border-radius:12px}
-.bottom{position:fixed;z-index:20;bottom:14px;left:50%;transform:translateX(-50%);width:min(820px,calc(100% - 24px));min-height:68px;background:#10131bd9;border:1px solid #2b3140;border-radius:23px;backdrop-filter:blur(22px);display:flex;justify-content:space-around;align-items:center;box-shadow:0 20px 60px #0008;padding:5px}.nav{background:none;border:0;color:#778092;font-size:10px;display:flex;flex-direction:column;gap:3px;align-items:center;min-width:55px;padding:6px 0}.nav strong{font-size:18px;font-weight:500}.nav.active{color:#9bb9ff}.fab{width:49px;height:49px;border-radius:16px;border:0;background:#f2f4f8;color:#111;font-size:27px;box-shadow:0 8px 25px #0008;flex:none;display:grid;place-items:center}
-.sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:12px 0 15px;gap:10px}.sectionTitle h2{margin:0;font-size:24px}.form{display:grid;gap:10px;margin-top:15px}.field{width:100%;border:1px solid var(--line);background:#0c0f15;color:var(--text);border-radius:13px;padding:12px;outline:none}.field:focus{border-color:#536eaa}.textarea{min-height:100px;resize:vertical}.search{margin-bottom:12px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.quote{border-left:3px solid var(--accent);padding-left:14px;color:#cdd5e2;line-height:1.55}.stat{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}.stat:last-child{border:0}
-.overlay{position:fixed;inset:0;background:#0009;z-index:40;display:none;align-items:flex-end;justify-content:center}.overlay.show{display:flex}.sheet{width:min(650px,100%);background:#11151d;border:1px solid var(--line);border-radius:27px 27px 0 0;padding:22px;max-height:90vh;overflow-y:auto;padding-bottom:calc(22px + env(safe-area-inset-bottom))}.sheet h2{margin-top:0}
-.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.quick button{padding:15px;border:1px solid var(--line);background:#171c26;color:#e8ecf3;border-radius:15px;text-align:left}.toast{position:fixed;z-index:60;left:50%;bottom:95px;transform:translateX(-50%) translateY(20px);opacity:0;background:#e9edf5;color:#111;padding:11px 16px;border-radius:12px;font-size:13px;transition:.25s;pointer-events:none}.toast.show{opacity:1;transform:translateX(-50%)}
-.barChart{display:flex;align-items:end;gap:8px;height:180px;padding:10px 2px 0}.barWrap{height:100%;flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:6px}.bar{width:100%;max-width:38px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,#86aaff,#8269dc);min-height:3px}.barLabel{font-size:10px;color:var(--muted)}.barValue{font-size:10px}.streak{font-size:40px;font-weight:850}.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:13px}.dayDot{text-align:center;font-size:10px;color:var(--muted)}.dayDot i{display:block;width:27px;height:27px;border-radius:50%;margin:0 auto 4px;background:#1b202b;border:1px solid #2a3140}.dayDot.on i{background:linear-gradient(135deg,#719eff,#8a70dc);border-color:#90a9e5}
-.miniActions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.mini{font-size:11px;padding:7px 9px;border-radius:9px;border:1px solid var(--line);background:#151923;color:#bdc6d5}.filterRow{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px}.filterRow button{white-space:nowrap}.taskDone{text-decoration:line-through;color:#778092}.check{width:25px;height:25px;border-radius:8px;border:1px solid #374154;background:#121722;display:grid;place-items:center;color:#fff;flex:none}.check.done{background:linear-gradient(135deg,#6fd7a3,#4a9e79);border-color:#6fd7a3}
-.rank{display:flex;align-items:center;gap:12px}.rankNo{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:#181d28;color:#bfc8d8;font-weight:700}.rankMain{flex:1}.rankBar{height:5px;background:#202531;border-radius:8px;margin-top:6px;overflow:hidden}.rankBar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}.activity{border-left:2px solid #36425b}.login{min-height:100vh;display:grid;place-items:center;padding:20px}.loginCard{width:min(440px,100%);background:linear-gradient(145deg,#11151d,#0d1016);border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:0 25px 80px #0008}.loginBrand{text-align:center;margin-bottom:24px}.loginBrand .orb{margin:0 auto 12px}.loginBrand h1{font-size:24px;margin:0}.loginBrand p{color:var(--muted);font-size:12px}.hidden{display:none!important}.hint{font-size:11px;color:var(--muted);line-height:1.5}
-@media(max-width:850px){.span3{grid-column:span 6}}@media(max-width:700px){.app{padding:15px 13px 105px}.hello h1{font-size:27px}.grid{grid-template-columns:1fr}.span3,.span4,.span6,.span8,.span12{grid-column:span 1}.card{border-radius:19px}.two,.three{grid-template-columns:1fr}.bottom{width:calc(100% - 16px);bottom:8px;padding:3px}.nav{min-width:40px;font-size:9px}.nav strong{font-size:16px}.quick{grid-template-columns:1fr}.loginCard{padding:22px}}
+:root{
+  --bg:#080a0f;--panel:#10131a;--panel2:#151923;--line:#252b38;
+  --text:#f3f5f8;--muted:#8f98a8;
+  --accent:#78a7ff;--accent2:#9a7cff;
+  --good:#6fd7a3;--warn:#f2c66d;--danger:#ef7777;
+  --radius:22px;--safe-b:env(safe-area-inset-bottom,0px);
+  --bg-grad:radial-gradient(circle at 70% -10%,#17213b 0,#080a0f 38%);
+  --card-bg:linear-gradient(145deg,#11151d,#0d1016);
+  --card-hero:linear-gradient(145deg,#1a2547,#0d1016);
+  --card-hero-border:#2e3d63;
+  --item-bg:#11151d;
+  --item-hover:#131822;
+  --input-bg:#0c0f15;--input-bg-focus:#0e121a;
+  --bottom-bg:#10131bd9;
+  --overlay-bg:#0009;
+  --toast-bg:#e9edf5;--toast-fg:#111;
+  --chip-bg:#181d28;--chip-fg:#bfc8d8;
+  --rank-bg:#181d28;--rank-fg:#bfc8d8;
+  --progress-bg:#202531;
+  --cell-bg:#1b202b;--cell-border:#252b38;
+  --bar-bg:linear-gradient(180deg,#86aaff,#8269dc);
+  --pool-bg:#0c0f15;
+  --my-pay-bg:linear-gradient(145deg,#152a1f,#0d1812);
+  --my-pay-border:#2c5942;
+  --empty-pay-bg:#0c0f15;--empty-pay-border:#2a3140;
+  --sheet-bg:#11151d;
+  --orb-grad:linear-gradient(145deg,#8db4ff,#8063dd);
+  --orb-glow:#708fff44;
+  --icon-bg:#11151e;--icon-fg:#dce2ed;
+  --secondary-bg:#151923;--secondary-fg:#dce2ed;
+  --secondary-hover-bg:#1a202c;
+  --quick-bg:#171c26;--quick-fg:#e8ecf3;
+  --quick-hover:#1d2433;
+  --step-btn:#1a202c;
+  --step-btn-hover:#232b3a;
+  --done-item-bg:#0d1a14;
+  --done-item-border:#2c5942;
+}
+[data-theme="light"]{
+  --bg:#f5f7fb;--panel:#ffffff;--panel2:#f0f3f9;--line:#dde3ee;
+  --text:#0f1729;--muted:#6b7690;
+  --accent:#4269d8;--accent2:#7a5bd6;
+  --good:#1f9d6b;--warn:#c78618;--danger:#d9534f;
+  --bg-grad:radial-gradient(circle at 70% -10%,#e5ecff 0,#f5f7fb 45%);
+  --card-bg:linear-gradient(145deg,#ffffff,#fbfcff);
+  --card-hero:linear-gradient(145deg,#eaf0ff,#ffffff);
+  --card-hero-border:#c9d5f5;
+  --item-bg:#ffffff;
+  --item-hover:#f5f7fc;
+  --input-bg:#f7f9fc;--input-bg-focus:#ffffff;
+  --bottom-bg:#ffffffdd;
+  --overlay-bg:#0f172944;
+  --toast-bg:#0f1729;--toast-fg:#fff;
+  --chip-bg:#eef2fa;--chip-fg:#3d4d70;
+  --rank-bg:#eef2fa;--rank-fg:#3d4d70;
+  --progress-bg:#e4e9f4;
+  --cell-bg:#eef2fa;--cell-border:#dde3ee;
+  --bar-bg:linear-gradient(180deg,#6f96f0,#8269dc);
+  --pool-bg:#f7f9fc;
+  --my-pay-bg:linear-gradient(145deg,#e7f7ee,#f2fdf7);
+  --my-pay-border:#8fd4b1;
+  --empty-pay-bg:#f7f9fc;--empty-pay-border:#cfd7e6;
+  --sheet-bg:#ffffff;
+  --orb-grad:linear-gradient(145deg,#6f96f0,#8269dc);
+  --orb-glow:#6f96f044;
+  --icon-bg:#ffffff;--icon-fg:#3d4d70;
+  --secondary-bg:#f0f3f9;--secondary-fg:#1f2a44;
+  --secondary-hover-bg:#e5eaf5;
+  --quick-bg:#f7f9fc;--quick-fg:#1f2a44;
+  --quick-hover:#eef2fa;
+  --step-btn:#eef2fa;
+  --step-btn-hover:#e0e6f2;
+  --done-item-bg:#f0fdf6;
+  --done-item-border:#8fd4b1;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100dvh;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;background:var(--bg-grad);color:var(--text);overflow-x:hidden;transition:background .3s ease,color .3s ease}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.app{max-width:1100px;margin:auto;min-height:100dvh;padding:18px 18px calc(180px + var(--safe-b))}
 
-/* --- Visual polish: interaction layer only --- */
-::selection{background:#789cff44;color:#fff}
-body{overflow-x:hidden}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(circle at 15% 35%,#6d8cff0d,transparent 28%),radial-gradient(circle at 85% 65%,#9a7cff0a,transparent 30%)}
-.card,.item,.quick button,.iconbtn,.secondary,.mini,.nav,.fab,.primary,.danger,.field,.chip{transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease,opacity .18s ease}
-.card:hover{transform:translateY(-2px);border-color:#35405a;box-shadow:0 18px 48px #0000002e}
-.item{position:relative;overflow:hidden}
-.item::after,.quick button::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 25%,#ffffff09 50%,transparent 75%);transform:translateX(-120%);transition:transform .55s ease;pointer-events:none}
-.item:hover::after,.quick button:hover::after{transform:translateX(120%)}
-.item:hover{transform:translateY(-1px);border-color:#30394d;background:#131822}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.brand{display:flex;gap:11px;align-items:center}
+.orb{width:38px;height:38px;border-radius:13px;background:var(--orb-grad);box-shadow:0 0 28px var(--orb-glow);display:grid;place-items:center;font-weight:800;color:#fff;transition:background .3s ease}
+.brand b{font-size:15px;letter-spacing:.4px}
+.brand small{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+.iconbtn{border:1px solid var(--line);background:var(--icon-bg);color:var(--icon-fg);border-radius:13px;width:42px;height:42px;display:inline-grid;place-items:center;transition:background .18s ease,border-color .18s ease}
+
+.view{display:none;animation:in .25s ease}
+.view.active{display:block}
+@keyframes in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+.hello{margin:6px 0 20px}
+.hello h1{font-size:clamp(22px,6vw,32px);margin:0 0 5px;line-height:1.15}
+.hello p{margin:0;color:var(--muted);font-size:clamp(12px,3.4vw,14px)}
+
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.card{background:var(--card-bg);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:0 14px 40px #00000020;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease,background .3s ease}
+.card.hero{background:var(--card-hero);border-color:var(--card-hero-border)}
+.span3{grid-column:span 3}.span4{grid-column:span 4}.span6{grid-column:span 6}.span8{grid-column:span 8}.span12{grid-column:span 12}
+.card h3{margin:0 0 14px;font-size:14px;font-weight:600;letter-spacing:.2px}
+.muted{color:var(--muted)}
+.big{font-size:clamp(24px,7vw,30px);font-weight:750;line-height:1.1}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{padding:7px 10px;border-radius:10px;background:var(--chip-bg);color:var(--chip-fg);font-size:12px;transition:background .18s ease,transform .18s ease}
+.chip.good{color:#baf2d5;background:#153126}
+[data-theme="light"] .chip.good{color:#0a6b42;background:#d4f2e0}
+.chip.warn{color:#ffe3a2;background:#302714}
+[data-theme="light"] .chip.warn{color:#8a5a00;background:#fff2d0}
+.chip.tap{cursor:pointer}
+.chip.tap:hover{background:var(--item-hover);transform:translateY(-1px)}
+
+.progress{height:7px;background:var(--progress-bg);border-radius:10px;overflow:hidden;margin-top:12px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:10px;transition:width .4s cubic-bezier(.2,.8,.2,1)}
+
+.list{display:grid;gap:8px}
+.item{position:relative;overflow:hidden;padding:12px;border:1px solid var(--line);background:var(--item-bg);border-radius:15px;transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.item.new{animation:pop .4s cubic-bezier(.2,.8,.2,1)}
+@keyframes pop{0%{transform:scale(.94);opacity:0}60%{transform:scale(1.02)}100%{transform:scale(1);opacity:1}}
+.item b{font-size:14px}
+.item small{display:block;color:var(--muted);margin-top:4px;font-size:11px}
+.item p{margin:8px 0 0;line-height:1.5}
+.item.done{background:var(--done-item-bg);border-color:var(--done-item-border);opacity:.92}
+.item.done::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#6fd7a3,#4a9e79);border-radius:15px 15px 0 0}
+.item.done b{color:var(--good)}
+.empty{padding:32px 16px;text-align:center;color:var(--muted);display:grid;gap:10px;justify-items:center}
+.empty .emo{font-size:42px;line-height:1}
+.empty b{color:var(--text);font-size:15px}
+.empty p{margin:0;font-size:13px}
+
+.primary{border:0;color:white;background:linear-gradient(135deg,#729eff,#8a70dc);padding:12px 16px;border-radius:13px;font-weight:650;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
 .primary:hover{transform:translateY(-1px);box-shadow:0 10px 28px #6f8fff30;filter:brightness(1.06)}
-.primary:active,.secondary:active,.danger:active,.iconbtn:active,.mini:active,.fab:active,.nav:active,.quick button:active{transform:scale(.96)}
-.secondary:hover,.mini:hover,.iconbtn:hover{border-color:#46536d;background:#1a202c;color:#fff}
-.danger:hover{border-color:#713c3c;background:#30191b}
-.nav{position:relative}
-.nav:hover{color:#c5d3f5;transform:translateY(-2px)}
-.nav strong{transition:transform .2s ease}
-.nav:hover strong{transform:scale(1.12)}
-.nav.active::after{content:"";position:absolute;bottom:-1px;width:4px;height:4px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
-.fab{transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
-.fab:hover{transform:translateY(-3px) rotate(2deg);box-shadow:0 14px 32px #000a;background:#fff}
-.field{transition:border-color .2s ease,box-shadow .2s ease,background .2s ease}
-.field:hover{border-color:#34405a}
-.field:focus{border-color:#6f8fcb;box-shadow:0 0 0 3px #6f8fcb18;background:#0e121a}
-.check{transition:transform .16s ease,background .18s ease,border-color .18s ease}
-.check:hover{transform:scale(1.06);border-color:#6078a7}
-.chip{transition:background .18s ease,transform .18s ease}
-.chip:hover{transform:translateY(-1px)}
-.progress i,.rankBar i,.bar{box-shadow:0 0 14px #789cff22}
-.bar{transition:height .45s cubic-bezier(.2,.8,.2,1),filter .2s ease}
-.barWrap:hover .bar{filter:brightness(1.15);box-shadow:0 0 18px #789cff38}
-.dayDot i{transition:transform .2s ease,box-shadow .2s ease}
-.dayDot:hover i{transform:scale(1.08);box-shadow:0 0 14px #789cff25}
-.overlay{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
-.sheet{animation:sheetIn .24s cubic-bezier(.2,.8,.2,1)}
-@keyframes sheetIn{from{opacity:.5;transform:translateY(24px)}to{opacity:1;transform:none}}
-.loginCard{animation:loginIn .55s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden}
-.loginCard::before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-100px;top:-120px;background:#789cff12;filter:blur(4px);pointer-events:none}
-.loginBrand .orb{animation:orbPulse 4s ease-in-out infinite}
-@keyframes orbPulse{0%,100%{box-shadow:0 0 28px #708fff44}50%{box-shadow:0 0 40px #8b75ff55}}
-@keyframes loginIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
-.toast{box-shadow:0 10px 35px #0008;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #789cff88;outline-offset:2px}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
+.primary:active{transform:scale(.96)}
+.secondary{border:1px solid var(--line);background:var(--secondary-bg);color:var(--secondary-fg);padding:10px 14px;border-radius:13px;transition:border-color .18s ease,background .18s ease}
+.secondary:hover{border-color:#46536d;background:var(--secondary-hover-bg)}
+.danger{border:1px solid #4b2929;background:#251416;color:#ffb2b2;padding:11px 14px;border-radius:13px}
+[data-theme="light"] .danger{border-color:#f5b5b5;background:#fff0f0;color:#c0392b}
 
+.bottom{position:fixed;z-index:20;bottom:calc(10px + var(--safe-b));left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 24px));min-height:64px;background:var(--bottom-bg);border:1px solid var(--line);border-radius:23px;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);display:flex;justify-content:space-around;align-items:center;box-shadow:0 20px 60px #0008;padding:5px;transition:background .3s ease,border-color .3s ease}
+.nav{position:relative;color:var(--muted);font-size:10px;display:flex;flex-direction:column;gap:3px;align-items:center;min-width:52px;padding:6px 4px;border-radius:14px;transition:color .2s ease,transform .2s ease}
+.nav strong{font-size:18px;font-weight:500;transition:transform .2s ease}
+.nav.active{color:var(--accent)}
+.nav.active::after{content:"";position:absolute;bottom:0;width:4px;height:4px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+
+.fabFloat{position:fixed;z-index:25;right:18px;bottom:calc(90px + var(--safe-b));width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,#729eff,#8a70dc);color:#fff;font-size:30px;display:grid;place-items:center;box-shadow:0 12px 30px #6f8fff55,0 0 0 6px #6f8fff10;transition:transform .2s ease,box-shadow .2s ease}
+.fabFloat:hover{transform:translateY(-3px) rotate(3deg);box-shadow:0 16px 36px #6f8fff77,0 0 0 8px #6f8fff18}
+.fabFloat:active{transform:scale(.94)}
+
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:8px 0 15px;gap:10px}
+.sectionTitle h2{margin:0;font-size:clamp(20px,5.5vw,24px)}
+
+.form{display:grid;gap:12px;margin-top:12px}
+.lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.6px;margin-bottom:-6px;padding-left:2px}
+.field{width:100%;border:1px solid var(--line);background:var(--input-bg);color:var(--text);border-radius:13px;padding:13px 14px;outline:none;transition:border-color .2s ease,box-shadow .2s ease,background .2s ease;-webkit-appearance:none;appearance:none;font-size:16px}
+.field:hover{border-color:#34405a}
+[data-theme="light"] .field:hover{border-color:#b0bdd6}
+.field:focus{border-color:#6f8fcb;box-shadow:0 0 0 3px #6f8fcb18;background:var(--input-bg-focus)}
+.textarea{min-height:100px;resize:vertical}
+.search{margin-bottom:12px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+.quote{border-left:3px solid var(--accent);padding-left:14px;color:var(--text);line-height:1.6;font-style:italic;opacity:.9}
+.stat{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}
+.stat:last-child{border:0}
+
+.overlay{position:fixed;inset:0;background:var(--overlay-bg);z-index:40;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:background .3s ease}
+.overlay.show{display:flex;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.sheet{width:min(650px,100%);background:var(--sheet-bg);border:1px solid var(--line);border-radius:27px 27px 0 0;padding:22px;max-height:92dvh;overflow-y:auto;padding-bottom:calc(22px + var(--safe-b));animation:sheetIn .28s cubic-bezier(.2,.8,.2,1);transition:background .3s ease}
+@keyframes sheetIn{from{opacity:.5;transform:translateY(30px)}to{opacity:1;transform:none}}
+.sheet h2{margin:0 0 6px;font-size:20px}
+.sheet .grabber{width:40px;height:4px;background:var(--line);border-radius:4px;margin:-8px auto 14px}
+
+.quick{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.quick button{padding:16px;border:1px solid var(--line);background:var(--quick-bg);color:var(--quick-fg);border-radius:16px;text-align:left;display:grid;gap:4px;transition:transform .18s ease,border-color .18s ease,background .18s ease;position:relative;overflow:hidden}
+.quick button:hover{border-color:#46536d;background:var(--quick-hover)}
+.quick button:active{transform:scale(.96)}
+.quick .qEmo{font-size:22px}
+.quick b{font-size:14px}
+.quick small{color:var(--muted);font-size:11px}
+.quick .otherItem{padding:16px;border:1px solid var(--line);background:var(--quick-bg);border-radius:16px;display:flex;align-items:center;gap:12px;transition:background .18s ease;cursor:pointer}
+.quick .otherItem:hover{background:var(--quick-hover)}
+.quick .otherItem .qEmo{font-size:22px}
+
+.toast{position:fixed;z-index:60;left:50%;bottom:calc(150px + var(--safe-b));transform:translateX(-50%) translateY(20px);opacity:0;background:var(--toast-bg);color:var(--toast-fg);padding:11px 16px;border-radius:12px;font-size:13px;transition:.25s;pointer-events:none;box-shadow:0 10px 35px #0008;font-weight:500;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+.barChart{display:flex;align-items:end;gap:8px;height:180px;padding:10px 2px 0}
+.barWrap{height:100%;flex:1;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:6px}
+.bar{width:100%;max-width:38px;border-radius:8px 8px 3px 3px;background:var(--bar-bg);min-height:3px;box-shadow:0 0 14px #789cff22;transition:height .5s cubic-bezier(.2,.8,.2,1),filter .2s ease}
+.barLabel{font-size:10px;color:var(--muted)}
+.barValue{font-size:10px}
+
+.streakGrid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-top:10px}
+.sCell{aspect-ratio:1;border-radius:4px;background:var(--cell-bg);border:1px solid var(--cell-border);transition:transform .15s ease}
+.sCell.l1{background:#25324d;border-color:#2c3d63}
+.sCell.l2{background:#3d5a94;border-color:#476aad}
+.sCell.l3{background:#5d86d6;border-color:#6f9ae5}
+.sCell.l4{background:#78a7ff;border-color:#8fb8ff}
+.sCell:hover{transform:scale(1.25);z-index:2}
+
+.ringWrap{display:flex;align-items:center;gap:16px}
+.ring{position:relative;width:80px;height:80px;flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring .bg{fill:none;stroke:var(--progress-bg);stroke-width:7}
+.ring .fg{fill:none;stroke:url(#ringGrad);stroke-width:7;stroke-linecap:round;transition:stroke-dashoffset .6s cubic-bezier(.2,.8,.2,1)}
+.ring .val{position:absolute;inset:0;display:grid;place-items:center;font-weight:750;font-size:18px}
+
+.streak{font-size:44px;font-weight:850;line-height:1}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:13px}
+.dayDot{text-align:center;font-size:10px;color:var(--muted)}
+.dayDot i{display:block;width:28px;height:28px;border-radius:50%;margin:0 auto 4px;background:var(--cell-bg);border:1px solid var(--cell-border);transition:transform .2s ease,box-shadow .2s ease}
+.dayDot.on i{background:linear-gradient(135deg,#719eff,#8a70dc);border-color:#90a9e5;box-shadow:0 0 14px #789cff40}
+
+.mini{font-size:11px;padding:8px 11px;border-radius:9px;border:1px solid var(--line);background:var(--secondary-bg);color:var(--secondary-fg);transition:background .18s ease,border-color .18s ease}
+.mini:hover{border-color:#46536d;background:var(--secondary-hover-bg)}
+.filterRow{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:none}
+.filterRow::-webkit-scrollbar{display:none}
+.filterRow button{white-space:nowrap}
+.filterRow .mini.active{background:linear-gradient(135deg,#2a3a63,#322a4d);border-color:#48588a;color:#c7d5ff}
+[data-theme="light"] .filterRow .mini.active{background:linear-gradient(135deg,#dbe4ff,#e4daff);border-color:#a4b6e8;color:#2a3a63}
+
+.taskDone{text-decoration:line-through;color:var(--muted)}
+.check{width:26px;height:26px;border-radius:9px;border:1px solid var(--line);background:var(--input-bg);display:grid;place-items:center;color:#fff;flex:none;transition:transform .15s ease,background .18s ease,border-color .18s ease;font-size:13px}
+.check.done{background:linear-gradient(135deg,#6fd7a3,#4a9e79);border-color:#6fd7a3}
+.check:active{transform:scale(.9)}
+
+.rank{display:flex;align-items:center;gap:12px}
+.rankNo{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--rank-bg);color:var(--rank-fg);font-weight:700;font-size:12px}
+.rankMain{flex:1}
+.rankBar{height:5px;background:var(--progress-bg);border-radius:8px;margin-top:6px;overflow:hidden}
+.rankBar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.activity{border-left:2px solid var(--accent)}
+
+.stepper{display:flex;align-items:center;gap:8px;background:var(--input-bg);border:1px solid var(--line);border-radius:13px;padding:6px;margin-top:4px}
+.stepper button{width:40px;height:40px;border-radius:10px;background:var(--step-btn);color:var(--secondary-fg);font-size:18px;font-weight:700;transition:background .15s ease,transform .15s ease}
+.stepper button:hover{background:var(--step-btn-hover)}
+.stepper button:active{transform:scale(.9)}
+.stepper input{flex:1;text-align:center;background:none;border:0;color:var(--text);font-size:16px;font-weight:600;outline:none;min-width:0}
+
+.poolBox{background:var(--pool-bg);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.poolBar{height:10px;background:var(--progress-bg);border-radius:10px;overflow:hidden;margin:8px 0}
+.poolBar i{display:block;height:100%;background:linear-gradient(90deg,#729eff,#8a70dc);border-radius:10px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.poolBar.full i{background:linear-gradient(90deg,#6fd7a3,#4a9e79);box-shadow:0 0 14px #6fd7a355}
+
+.payChip{font-size:10px;padding:5px 9px;border-radius:9px;display:inline-flex;align-items:center;gap:4px;font-weight:600}
+
+.myPayBox{background:var(--my-pay-bg);border:1px solid var(--my-pay-border);border-radius:16px;padding:14px;margin-bottom:14px}
+.emptyPayBox{background:var(--empty-pay-bg);border:1px dashed var(--empty-pay-border);border-radius:16px;padding:14px;margin-bottom:14px;text-align:center}
+
+.archiveToggle{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--pool-bg);border:1px solid var(--line);border-radius:15px;cursor:pointer;transition:background .18s ease;margin-top:14px}
+.archiveToggle:hover{background:var(--item-hover)}
+.archiveToggle b{font-size:13px}
+.archiveToggle .arrow{transition:transform .25s ease;font-size:14px;color:var(--muted)}
+.archiveToggle.open .arrow{transform:rotate(180deg)}
+.archiveBody{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.2,.8,.2,1)}
+.archiveBody.open{max-height:3000px}
+.archiveBody .list{padding-top:10px}
+
+.themeToggle{display:flex;gap:6px;background:var(--chip-bg);padding:5px;border-radius:12px;margin-top:6px}
+.themeToggle button{flex:1;padding:11px;border-radius:9px;font-size:12px;font-weight:600;color:var(--muted);transition:background .18s ease,color .18s ease}
+.themeToggle button.active{background:var(--item-bg);color:var(--text);box-shadow:0 2px 10px #0002}
+[data-theme="light"] .themeToggle button.active{background:#fff}
+
+@media(hover:none){
+  .card:hover{transform:none}
+  .item:hover{transform:none}
+  .fabFloat:hover{transform:none}
+}
+
+.testBanner{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(90deg,#f2c66d,#ef7777);color:#1a0d0d;font-size:11px;font-weight:700;text-align:center;padding:5px;letter-spacing:.5px;text-transform:uppercase}
+
+.login{min-height:100dvh;display:grid;align-items:start;justify-items:center;padding:15vh 20px 40px}
+.loginCard{width:min(440px,100%);background:var(--card-bg);border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:0 25px 80px #0008;position:relative;overflow:hidden;animation:loginIn .55s cubic-bezier(.2,.8,.2,1)}
+.loginCard::before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-100px;top:-120px;background:#789cff12;filter:blur(4px);pointer-events:none}
+.loginBrand{text-align:center;margin-bottom:24px}
+.loginBrand .orb{margin:0 auto 12px;animation:orbPulse 4s ease-in-out infinite}
+@keyframes orbPulse{0%,100%{box-shadow:0 0 28px var(--orb-glow)}50%{box-shadow:0 0 40px #8b75ff55}}
+@keyframes loginIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.loginBrand h1{font-size:24px;margin:0}
+.loginBrand p{color:var(--muted);font-size:12px}
+.hidden{display:none!important}
+.hint{font-size:11px;color:var(--muted);line-height:1.5}
+
+@media(max-width:850px){.span3{grid-column:span 6}}
+@media(max-width:700px){
+  .app{padding:14px 13px calc(180px + var(--safe-b))}
+  .grid{grid-template-columns:1fr}
+  .span3,.span4,.span6,.span8,.span12{grid-column:span 1}
+  .card{border-radius:19px;padding:16px}
+  .two,.three{grid-template-columns:1fr}
+  .quick{grid-template-columns:1fr}
+  .loginCard{padding:22px}
+  .bottom{width:calc(100% - 16px);bottom:calc(8px + var(--safe-b))}
+  .fabFloat{right:14px;bottom:calc(84px + var(--safe-b));width:52px;height:52px}
+}
+
+::selection{background:#789cff44;color:#fff}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #789cff88;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
+
+<div id="testBanner" class="testBanner hidden">🧪 TEST MODU — Giriş atlandı, sahte verilerle çalışıyor</div>
+
 <div id="login" class="login">
   <div class="loginCard">
     <div class="loginBrand"><div class="orb">7</div><h1>The Seven Sleepers</h1><p>CONTROL PANEL</p></div>
     <div class="form">
-      <input id="loginUser" class="field" autocomplete="username" placeholder="Kullanıcı adı">
-      <input id="loginPass" type="password" class="field" autocomplete="current-password" placeholder="Şifre">
-      <button class="primary" onclick="login()">Giriş yap</button>
+      <label class="lbl">Kullanıcı adı</label>
+      <input id="loginUser" class="field" autocomplete="username" placeholder="kullanici" enterkeyhint="next">
+      <label class="lbl">Şifre</label>
+      <input id="loginPass" type="password" class="field" autocomplete="current-password" placeholder="••••••••" enterkeyhint="go" onkeydown="if(event.key==='Enter')login()">
+      <button class="primary" style="margin-top:6px" onclick="login()">Giriş yap</button>
       <div id="loginError" class="hint"></div>
     </div>
   </div>
 </div>
 
 <div id="app" class="app hidden">
-<header class="top"><div class="brand"><div class="orb">7</div><div><b>THE SEVEN SLEEPERS</b><small>CONTROL PANEL</small></div></div><button class="iconbtn" onclick="openSettings()">⚙</button></header>
+<header class="top">
+  <div class="brand"><div class="orb">7</div><div><b>THE SEVEN SLEEPERS</b><small>CONTROL PANEL</small></div></div>
+  <button class="iconbtn" onclick="openSettings()" aria-label="Ayarlar">⚙</button>
+</header>
 
 <main id="today" class="view active">
-<div class="hello"><h1 id="greeting">Selam.</h1><p id="dateText"></p></div>
-<div class="grid">
-<section class="card span8"><div class="row"><h3>Bugünün özeti</h3><span class="chip" id="todayCount">0 kayıt</span></div><div class="list" id="todayList"></div></section>
-<section class="card span4"><h3>Gelişim serisi</h3><div class="streak" id="streakCount">0</div><p class="muted">günlük seri</p><div id="weekDots" class="days"></div></section>
-<section class="card span4"><h3>Haftalık hedef</h3><div class="big" id="weekActive">0/7</div><p class="muted">aktif gün</p><div class="progress"><i id="weekBar" style="width:0"></i></div></section>
-<section class="card span4"><h3>Planlar</h3><div class="big" id="planToday">0</div><p class="muted">bugün kalan görev</p><button class="secondary" style="width:100%;margin-top:8px" onclick="showView('plans')">Planlara git</button></section>
-<section class="card span4"><h3>Ortak görevler</h3><div class="big" id="sharedMini">0</div><p class="muted">aktif ortak görev</p><button class="secondary" style="width:100%;margin-top:8px" onclick="showView('tasks')">Görevlere git</button></section>
-<section class="card span6"><div class="row"><h3>Son kayıtların</h3><button class="secondary" onclick="showView('growth')">Tümü</button></div><div id="growthMini" class="list"></div></section>
-<section class="card span6"><h3>Topluluk</h3><div id="communityMini"></div></section>
-</div></main>
+  <div class="hello"><h1 id="greeting">Selam.</h1><p id="dateText"></p></div>
+  <div class="grid">
+    <section class="card hero span8">
+      <div class="row"><h3>Bugünün özeti</h3><span class="chip" id="todayCount">0 kayıt</span></div>
+      <div class="list" id="todayList"></div>
+    </section>
+    <section class="card hero span4">
+      <h3>Gelişim serisi</h3>
+      <div class="ringWrap">
+        <div class="ring">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#78a7ff"/><stop offset="1" stop-color="#9a7cff"/></linearGradient></defs>
+            <circle class="bg" cx="40" cy="40" r="34"/>
+            <circle class="fg" id="ringFg" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+          </svg>
+          <div class="val" id="ringVal">0</div>
+        </div>
+        <div>
+          <div class="streak" id="streakCount">0</div>
+          <p class="muted" style="margin:2px 0 0;font-size:12px">günlük seri</p>
+        </div>
+      </div>
+      <div id="weekDots" class="days"></div>
+    </section>
+    <section class="card span4">
+      <h3>Haftalık hedef</h3>
+      <div class="big" id="weekActive">0/7</div>
+      <p class="muted" style="margin:4px 0 0;font-size:12px">aktif gün</p>
+      <div class="progress"><i id="weekBar" style="width:0"></i></div>
+    </section>
+    <section class="card span4">
+      <h3>Planlar</h3>
+      <div class="big" id="planToday">0</div>
+      <p class="muted" style="margin:4px 0 0;font-size:12px">bugün kalan görev</p>
+      <button class="secondary" style="width:100%;margin-top:10px" onclick="showView('plans')">Planlara git</button>
+    </section>
+    <section class="card span4">
+      <h3>Ortak görevler</h3>
+      <div class="big" id="sharedMini">0</div>
+      <p class="muted" style="margin:4px 0 0;font-size:12px">aktif ortak görev</p>
+      <button class="secondary" style="width:100%;margin-top:10px" onclick="showView('tasks')">Görevlere git</button>
+    </section>
+    <section class="card span6">
+      <h3>Bugünün sözü</h3>
+      <div class="quote" id="dailyQuote">"İman hem nurdur hem kuvvettir."</div>
+      <p class="muted" style="margin:8px 0 0;font-size:11px">— Said Nursî</p>
+    </section>
+    <section class="card span6">
+      <div class="row"><h3>Son kayıtların</h3><button class="secondary" onclick="showView('growth')">Tümü</button></div>
+      <div id="growthMini" class="list"></div>
+    </section>
+    <section class="card span12">
+      <h3>8 haftalık aktivite</h3>
+      <div class="streakGrid" id="streakGrid"></div>
+      <div class="row" style="margin-top:10px"><span class="muted" style="font-size:11px">Az</span><div style="display:flex;gap:4px"><i style="width:12px;height:12px;border-radius:3px;background:var(--cell-bg);display:block"></i><i style="width:12px;height:12px;border-radius:3px;background:#25324d;display:block"></i><i style="width:12px;height:12px;border-radius:3px;background:#3d5a94;display:block"></i><i style="width:12px;height:12px;border-radius:3px;background:#5d86d6;display:block"></i><i style="width:12px;height:12px;border-radius:3px;background:#78a7ff;display:block"></i></div><span class="muted" style="font-size:11px">Çok</span></div>
+    </section>
+  </div>
+</main>
 
-<main id="growth" class="view"><div class="sectionTitle"><h2>Kişisel Gelişim</h2><button class="primary" onclick="openGrowth()">+ Yeni kayıt</button></div>
-<div class="grid"><section class="card span4"><h3>Okumalar</h3><div class="big" id="bookCount">0</div><p class="muted">okuma kaydı</p></section><section class="card span4"><h3>Dinlemeler</h3><div class="big" id="listenCount">0</div><p class="muted">dinleme kaydı</p></section><section class="card span4"><h3>Öğrendiklerim</h3><div class="big" id="learnCount">0</div><p class="muted">öğrenme kaydı</p></section>
-<section class="card span12"><h3>Bu haftanın gelişim grafiği</h3><div id="growthChart" class="barChart"></div><div class="row" style="margin-top:10px"><span class="muted" id="growthWeekTotal">0 kayıt</span><span class="chip" id="growthWeekBest">—</span></div></section>
-<section class="card span12"><div class="row"><h3>Gelişim günlüğü</h3><span class="muted">Kendi kayıtların</span></div><input class="field search" id="growthSearch" oninput="renderGrowth()" placeholder="Kayıtlarda ara..."><div id="growthList" class="list"></div></section></div></main>
+<main id="growth" class="view">
+  <div class="sectionTitle"><h2>Kişisel Gelişim</h2><button class="primary" onclick="openGrowth()">+ Yeni</button></div>
+  <div class="grid">
+    <section class="card span4"><h3>Okumalar</h3><div class="big" id="bookCount">0</div><p class="muted" style="margin:4px 0 0;font-size:12px">okuma kaydı</p></section>
+    <section class="card span4"><h3>Dinlemeler</h3><div class="big" id="listenCount">0</div><p class="muted" style="margin:4px 0 0;font-size:12px">dinleme kaydı</p></section>
+    <section class="card span4"><h3>Öğrendiklerim</h3><div class="big" id="learnCount">0</div><p class="muted" style="margin:4px 0 0;font-size:12px">öğrenme kaydı</p></section>
+    <section class="card span12"><h3>Bu haftanın gelişim grafiği</h3><div id="growthChart" class="barChart"></div><div class="row" style="margin-top:10px"><span class="muted" id="growthWeekTotal" style="font-size:12px">0 kayıt</span><span class="chip" id="growthWeekBest">—</span></div></section>
+    <section class="card span12"><div class="row"><h3>Gelişim günlüğü</h3><span class="muted" style="font-size:11px">Uzun bas → sil</span></div><input class="field search" id="growthSearch" oninput="renderGrowth()" placeholder="🔍 Kayıtlarda ara..."><div id="growthList" class="list"></div></section>
+  </div>
+</main>
 
-<main id="community" class="view"><div class="sectionTitle"><h2>Topluluk</h2><span class="chip">7 kişi</span></div>
-<div class="grid"><section class="card span4"><h3>Bu hafta toplam</h3><div class="big" id="cTotal">0</div><p class="muted">gelişim kaydı</p></section><section class="card span4"><h3>En aktif</h3><div class="big" id="cBest">—</div><p class="muted" id="cBestMeta">—</p></section><section class="card span4"><h3>Ortak görev ilerlemesi</h3><div class="big" id="cShared">0%</div><p class="muted">aktif görevlerin ortalaması</p></section>
-<section class="card span6"><h3>Haftalık sıralama</h3><div id="communityRanking" class="list"></div></section>
-<section class="card span6"><h3>Aktivite grafiği</h3><div id="communityChart" class="barChart"></div></section>
-<section class="card span12"><div class="row"><h3>Topluluk akışı</h3><span class="muted">Paylaşıma açık kayıtlar</span></div><div id="communityFeed" class="list"></div></section></div></main>
+<main id="community" class="view">
+  <div class="sectionTitle"><h2>Topluluk</h2><span class="chip">7 kişi</span></div>
+  <div class="grid">
+    <section class="card span4"><h3>Bu hafta toplam</h3><div class="big" id="cTotal">0</div><p class="muted" style="margin:4px 0 0;font-size:12px">gelişim kaydı</p></section>
+    <section class="card span4"><h3>En aktif</h3><div class="big" id="cBest">—</div><p class="muted" id="cBestMeta" style="margin:4px 0 0;font-size:12px">—</p></section>
+    <section class="card span4"><h3>Ortak görev</h3><div class="big" id="cShared">0%</div><p class="muted" style="margin:4px 0 0;font-size:12px">ortalama ilerleme</p></section>
+    <section class="card span6"><h3>Haftalık sıralama</h3><div id="communityRanking" class="list"></div></section>
+    <section class="card span6"><h3>Aktivite grafiği</h3><div id="communityChart" class="barChart"></div></section>
+    <section class="card span12"><div class="row"><h3>Topluluk akışı</h3><span class="muted" style="font-size:11px">Paylaşıma açık</span></div><div id="communityFeed" class="list"></div></section>
+  </div>
+</main>
 
-<main id="tasks" class="view"><div class="sectionTitle"><h2>Ortak Görevler</h2><button class="primary" onclick="openSharedTask()">+ Ortak görev</button></div>
-<div class="grid"><section class="card span4"><h3>Aktif görev</h3><div class="big" id="sharedCount">0</div><p class="muted">topluluk görevi</p></section><section class="card span4"><h3>Toplam ilerleme</h3><div class="big" id="sharedPercent">0%</div><p class="muted">aktif görev ortalaması</p></section><section class="card span4"><h3>Benim katkım</h3><div class="big" id="myContribution">0</div><p class="muted">tamamlanan miktar</p></section>
-<section class="card span12"><div id="sharedTasksList" class="list"></div></section></div></main>
+<main id="tasks" class="view">
+  <div class="sectionTitle"><h2>Ortak Görevler</h2><button class="primary" onclick="openSharedTask()">+ Yeni</button></div>
+  <div class="grid">
+    <section class="card span4"><h3>Aktif görev</h3><div class="big" id="sharedCount">0</div><p class="muted" style="margin:4px 0 0;font-size:12px">topluluk görevi</p></section>
+    <section class="card span4"><h3>Toplam ilerleme</h3><div class="big" id="sharedPercent">0%</div><p class="muted" style="margin:4px 0 0;font-size:12px">ortalama</p></section>
+    <section class="card span4"><h3>Benim katkım</h3><div class="big" id="myContribution">0</div><p class="muted" style="margin:4px 0 0;font-size:12px">tamamlanan</p></section>
+    <section class="card span12">
+      <div id="sharedTasksList" class="list"></div>
+      <div id="archiveWrap"></div>
+    </section>
+  </div>
+</main>
 
-<main id="plans" class="view"><div class="sectionTitle"><h2>Planlar</h2><button class="primary" onclick="openPlan()">+ Yeni plan</button></div><div class="grid"><section class="card span4"><h3>Bugün</h3><div class="big" id="plansOpenToday">0</div><p class="muted">tamamlanmamış</p></section><section class="card span4"><h3>Haftalık tamamlanan</h3><div class="big" id="plansDoneWeek">0</div><p class="muted">görev</p></section><section class="card span4"><h3>Plan serisi</h3><div class="big" id="planStreak">0</div><p class="muted">aktif gün</p></section><section class="card span12"><div class="filterRow"><button class="mini" onclick="setPlanFilter('all')">Tümü</button><button class="mini" onclick="setPlanFilter('today')">Bugün</button><button class="mini" onclick="setPlanFilter('open')">Açık</button><button class="mini" onclick="setPlanFilter('done')">Tamamlanan</button></div><div id="plansList" class="list"></div></section></div></main>
+<main id="plans" class="view">
+  <div class="sectionTitle"><h2>Planlar</h2><button class="primary" onclick="openPlan()">+ Yeni</button></div>
+  <div class="grid">
+    <section class="card span4"><h3>Bugün</h3><div class="big" id="plansOpenToday">0</div><p class="muted" style="margin:4px 0 0;font-size:12px">tamamlanmamış</p></section>
+    <section class="card span4"><h3>Haftalık tamamlanan</h3><div class="big" id="plansDoneWeek">0</div><p class="muted" style="margin:4px 0 0;font-size:12px">görev</p></section>
+    <section class="card span4"><h3>Plan serisi</h3><div class="big" id="planStreak">0</div><p class="muted" style="margin:4px 0 0;font-size:12px">aktif gün</p></section>
+    <section class="card span12">
+      <div class="filterRow">
+        <button class="mini active" data-pfilter="all" onclick="setPlanFilter('all',this)">Tümü</button>
+        <button class="mini" data-pfilter="today" onclick="setPlanFilter('today',this)">Bugün</button>
+        <button class="mini" data-pfilter="open" onclick="setPlanFilter('open',this)">Açık</button>
+        <button class="mini" data-pfilter="done" onclick="setPlanFilter('done',this)">Tamamlanan</button>
+      </div>
+      <div id="plansList" class="list"></div>
+    </section>
+  </div>
+</main>
 
-<main id="analysis" class="view"><div class="sectionTitle"><h2>Haftalık Analiz</h2></div><div class="grid"><section class="card span6"><h3>Haftanın özeti</h3><div class="stat"><span>Aktif gün</span><b id="aActive">0/7</b></div><div class="stat"><span>Gelişim kaydı</span><b id="aGrowth">0</b></div><div class="stat"><span>Tamamlanan plan</span><b id="aPlans">0</b></div><div class="stat"><span>Ortak görev katkısı</span><b id="aShared">0</b></div></section><section class="card span6"><h3>Bu haftanın mesajı</h3><div class="quote" id="analysisMessage">Düzenli küçük adımlar, birlikte yüründüğünde daha anlamlı hale gelir.</div></section><section class="card span12"><h3>Başarımlar</h3><div id="achievements" class="list"></div></section></div></main>
+<main id="analysis" class="view">
+  <div class="sectionTitle"><h2>Haftalık Analiz</h2></div>
+  <div class="grid">
+    <section class="card span6">
+      <h3>Haftanın özeti</h3>
+      <div class="stat"><span>Aktif gün</span><b id="aActive">0/7</b></div>
+      <div class="stat"><span>Gelişim kaydı</span><b id="aGrowth">0</b></div>
+      <div class="stat"><span>Tamamlanan plan</span><b id="aPlans">0</b></div>
+      <div class="stat"><span>Ortak görev katkısı</span><b id="aShared">0</b></div>
+    </section>
+    <section class="card span6"><h3>Bu haftanın mesajı</h3><div class="quote" id="analysisMessage">Düzenli küçük adımlar, birlikte yüründüğünde daha anlamlı hale gelir.</div></section>
+    <section class="card span12"><h3>Başarımlar</h3><div id="achievements" class="list"></div></section>
+  </div>
+</main>
 </div>
 
-<nav id="nav" class="bottom hidden"><button class="nav active" data-view="today" onclick="showView('today',this)"><strong>⌂</strong>Bugün</button><button class="nav" data-view="growth" onclick="showView('growth',this)"><strong>◫</strong>Gelişim</button><button class="nav" data-view="community" onclick="showView('community',this)"><strong>◎</strong>Topluluk</button><button class="fab" onclick="openQuick()">+</button><button class="nav" data-view="tasks" onclick="showView('tasks',this)"><strong>✓</strong>Görevler</button><button class="nav" data-view="plans" onclick="showView('plans',this)"><strong>☷</strong>Planlar</button><button class="nav" data-view="analysis" onclick="showView('analysis',this)"><strong>◈</strong>Analiz</button></nav>
-<div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div><div class="toast" id="toast"></div>
+<button id="fab" class="fabFloat hidden" onclick="openQuick()" aria-label="Hızlı kayıt">+</button>
+
+<nav id="nav" class="bottom hidden">
+  <button class="nav active" data-view="today" onclick="showView('today',this)"><strong>⌂</strong>Bugün</button>
+  <button class="nav" data-view="growth" onclick="showView('growth',this)"><strong>◫</strong>Gelişim</button>
+  <button class="nav" data-view="tasks" onclick="showView('tasks',this)"><strong>✓</strong>Görevler</button>
+  <button class="nav" data-view="plans" onclick="showView('plans',this)"><strong>☷</strong>Planlar</button>
+  <button class="nav" data-action="more" onclick="openMore(this)"><strong>⋯</strong>Diğer</button>
+</nav>
+
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeSheet()"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
 
 <script>
+/* ═══════════════════════════════════════════════════════════
+   🧪 TEST MODU — true yapınca giriş atlanır, sahte veri yüklenir.
+   Canlıya alırken false yap.
+═══════════════════════════════════════════════════════════ */
+const TEST_MODE = false;
+
 const SUPABASE_URL='https://tlqfrsmwanrodyaaxtbo.supabase.co';
 const SUPABASE_ANON_KEY='sb_publishable_ouK1_ez3_0S5kPyBeATTug_p6yWaxQ7';
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const supabaseClient = (typeof supabase!=='undefined') ? supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY) : null;
 
-let me=null, profile=null, planFilter='all', cache={growth:[],notes:[],tasks:[],shared:[],contrib:[]};
+let me=null, profile=null, planFilter='all';
+let cache={growth:[],notes:[],tasks:[],shared:[],contrib:[]};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const nowISO=()=>new Date().toISOString();
+const haptic=(ms=10)=>{try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}};
 function dateKey(v){const d=new Date(v);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function addDays(k,n){const d=new Date(k+'T00:00:00');d.setDate(d.getDate()+n);return dateKey(d)}
 function monday(k=dateKey(new Date())){const d=new Date(k+'T00:00:00'),day=d.getDay();d.setDate(d.getDate()+(day===0?-6:1-day));return dateKey(d)}
 function weekKeys(){const m=monday();return Array.from({length:7},(_,i)=>addDays(m,i))}
 function fmtDate(v){return new Date(v).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'})}
 function fmtTime(v){return new Date(v).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'})}
-function toast(t){const x=$('toast');x.textContent=t;x.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>x.classList.remove('show'),1900)}
-function openSheet(html){$('sheet').innerHTML=html;$('overlay').classList.add('show')}
+function toast(t){const x=$('toast');x.textContent=t;x.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>x.classList.remove('show'),2200)}
+function openSheet(html){$('sheet').innerHTML=`<div class="grabber"></div>`+html;$('overlay').classList.add('show')}
 function closeSheet(){$('overlay').classList.remove('show')}
-function showView(id,btn){document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));$(id)?.classList.add('active');document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');else document.querySelector(`[data-view="${id}"]`)?.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});renderAll()}
+function showView(id,btn){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  $(id)?.classList.add('active');
+  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  else document.querySelector(`[data-view="${id}"]`)?.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  renderAll();
+}
 function greeting(){const h=new Date().getHours();return h<6?'Gece sessizliği.':h<12?'Günaydın.':h<18?'İyi günler.':'İyi akşamlar.'}
 
+function confirmSheet(title,msg,onYes,danger=true){
+  openSheet(`<h2>${esc(title)}</h2><p class="muted" style="margin:6px 0 18px;line-height:1.5">${esc(msg)}</p>
+  <div class="two"><button class="secondary" onclick="closeSheet()">Vazgeç</button>
+  <button class="${danger?'danger':'primary'}" id="confirmYes">Evet, devam</button></div>`);
+  $('confirmYes').onclick=()=>{closeSheet();haptic(15);onYes&&onYes()};
+}
+
+/* ════════ TEMA ════════ */
+function initTheme(){
+  let saved='dark';
+  try{saved=localStorage.getItem('ts-theme')||'dark'}catch(e){}
+  document.documentElement.setAttribute('data-theme',saved);
+}
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  try{localStorage.setItem('ts-theme',t)}catch(e){}
+  document.querySelectorAll('.themeToggle button').forEach(b=>{
+    const isDark=b.textContent.includes('Koyu');
+    b.classList.toggle('active',(t==='dark'&&isDark)||(t==='light'&&!isDark));
+  });
+  // meta theme-color güncelle
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.setAttribute('content',t==='light'?'#f5f7fb':'#080a0f');
+  haptic(10);
+  toast(t==='light'?'☀️ Açık tema':'🌙 Koyu tema');
+}
+
+/* ════════ LOGIN ════════ */
 async function login(){
+  if(TEST_MODE){await bootTest();return}
   const u=$('loginUser').value.trim().toLowerCase(), p=$('loginPass').value;
-  if(!u||!p)return $('loginError').textContent='Kullanıcı adı ve şifre gerekli.';
-  if(SUPABASE_URL.startsWith('YOUR_'))return $('loginError').textContent='Önce index.html içindeki Supabase URL ve anon key alanlarını doldur.';
+  if(!u||!p){$('loginError').textContent='Kullanıcı adı ve şifre gerekli.';return}
   const {data,error}=await supabaseClient.auth.signInWithPassword({email:`${u}@seven-sleepers.local`,password:p});
-  if(error)return $('loginError').textContent='Giriş başarısız. Kullanıcı adı veya şifreyi kontrol et.';
+  if(error){$('loginError').textContent='Giriş başarısız.';return}
   me=data.user;await boot();
 }
-async function logout(){await supabaseClient.auth.signOut();location.reload()}
+async function logout(){if(TEST_MODE){location.reload();return}await supabaseClient.auth.signOut();location.reload()}
+
 async function boot(){
   const {data:{user}}=await supabaseClient.auth.getUser(); if(!user)return;
   me=user;
   const {data:p,error}=await supabaseClient.from('profiles').select('*').eq('id',me.id).single();
   if(error||!p){$('loginError').textContent='Profil bulunamadı.';return}
-  profile=p;$('login').classList.add('hidden');$('app').classList.remove('hidden');$('nav').classList.remove('hidden');await loadData();renderAll();
+  profile=p;
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('nav').classList.remove('hidden');
+  $('fab').classList.remove('hidden');
+  await loadData();renderAll();
 }
+
+/* ════════ TEST MODE ════════ */
+async function bootTest(){
+  $('testBanner').classList.remove('hidden');
+  me={id:'test-user-1'};
+  profile={id:'test-user-1',username:'test',display_name:'Test Kullanıcı'};
+  const today=dateKey(new Date());
+  const now=Date.now();
+  const day=86400000;
+  const fakeGrowth=[];
+  const titles=['Risale-i Nur - Lem\'alar','Cevşen','Kur\'an-ı Kerim','Siyer','Tefsir','Hadis','Fıkıh'];
+  for(let i=0;i<45;i++){
+    const d=new Date(now-Math.floor(Math.random()*56)*day);
+    fakeGrowth.push({
+      id:'g'+i,user_id:'test-user-1',
+      type:['book','listen','learn'][i%3],
+      title:titles[i%titles.length]+' — '+(i+1),
+      source:['Said Nursî','Bediüzzaman','—','Risale'][i%4],
+      body:i%3===0?'Bugünkü okumada dikkatimi çeken nokta: ihlas ve niyetin önemi.':'',
+      is_public:i%2===0,
+      created_at:d.toISOString()
+    });
+  }
+  cache.growth=fakeGrowth.sort((a,b)=>b.created_at.localeCompare(a.created_at));
+  cache.notes=[{id:'n1',user_id:'test-user-1',title:'Sabah notu',body:'Erken kalkmak verimli.',created_at:new Date(now-day).toISOString()}];
+  cache.tasks=[
+    {id:'t1',user_id:'test-user-1',title:'Sabah namazı',description:null,due_date:today,due_time:'06:00',completed:true,completed_at:new Date(now-3*3600000).toISOString()},
+    {id:'t2',user_id:'test-user-1',title:'Cevşen oku',description:null,due_date:today,due_time:'20:00',completed:false,completed_at:null},
+    {id:'t3',user_id:'test-user-1',title:'Kitap oku',description:'20 sayfa',due_date:addDays(today,1),due_time:null,completed:false,completed_at:null},
+    {id:'t4',user_id:'test-user-1',title:'Spor',description:null,due_date:addDays(today,-1),due_time:null,completed:true,completed_at:new Date(now-day).toISOString()},
+  ];
+  cache.shared=[
+    {id:'s1',title:'Cevşen Hatmi',description:'Birlikte okuma — herkes pay alır',total_amount:100,unit:'Bab',created_by:'test-user-1',status:'active',
+     _members:[
+       {user_id:'u2',username:'ahmet',display_name:'Ahmet',assigned_amount:25,completed_amount:25},
+       {user_id:'u3',username:'fatma',display_name:'Fatma',assigned_amount:15,completed_amount:8},
+       {user_id:'u4',username:'ali',display_name:'Ali',assigned_amount:10,completed_amount:0},
+     ]},
+    {id:'s2',title:'Kur\'an Hatmi',description:'30 cüz paylaşıldı',total_amount:30,unit:'Cüz',created_by:'other',status:'active',
+     _members:[
+       {user_id:'u5',username:'zeynep',display_name:'Zeynep',assigned_amount:5,completed_amount:3},
+     ]},
+    {id:'s3',title:'Salavat Kampanyası',description:'Birlikte 1000 salavat',total_amount:1000,unit:'Salavat',created_by:'test-user-1',status:'active',
+     _members:[]},
+    {id:'s4',title:'Yasin Hatmi',description:'Tamamlanmış örnek — arşivde görünür',total_amount:7,unit:'Adet',created_by:'other',status:'active',
+     _members:[
+       {user_id:'u2',username:'ahmet',display_name:'Ahmet',assigned_amount:3,completed_amount:3},
+       {user_id:'u3',username:'fatma',display_name:'Fatma',assigned_amount:4,completed_amount:4},
+     ]},
+  ];
+  cache.contrib=[];
+  window._profiles=[
+    {id:'test-user-1',username:'test',display_name:'Test Kullanıcı'},
+    {id:'u2',username:'ahmet',display_name:'Ahmet'},
+    {id:'u3',username:'fatma',display_name:'Fatma'},
+    {id:'u4',username:'ali',display_name:'Ali'},
+    {id:'u5',username:'zeynep',display_name:'Zeynep'},
+    {id:'u6',username:'mehmet',display_name:'Mehmet'},
+    {id:'u7',username:'ayse',display_name:'Ayşe'},
+  ];
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('nav').classList.remove('hidden');
+  $('fab').classList.remove('hidden');
+  renderAll();
+}
+
 async function loadData(){
+  if(TEST_MODE)return;
   const [g,n,t,s,c]=await Promise.all([
     supabaseClient.from('growth_records').select('*').eq('user_id',me.id).order('created_at',{ascending:false}),
     supabaseClient.from('notes').select('*').eq('user_id',me.id).order('created_at',{ascending:false}),
@@ -172,116 +646,714 @@ async function loadData(){
   ]);
   cache.growth=g.data||[];cache.notes=n.data||[];cache.tasks=t.data||[];cache.shared=s.data||[];cache.contrib=c.data||[];
 }
-async function refresh(){await loadData();renderAll()}
+async function refresh(){if(TEST_MODE){renderAll();return}await loadData();renderAll()}
 
-function openQuick(){openSheet(`<h2>Hızlı kayıt</h2><div class="quick">
-<button onclick="closeSheet();openGrowth()">📚<br><b>Gelişim kaydı</b><small class="muted">Okuma, dinleme, öğrenme</small></button>
-<button onclick="closeSheet();openNote()">📝<br><b>Not</b><small class="muted">Kişisel not</small></button>
-<button onclick="closeSheet();openPlan()">✓<br><b>Yeni plan</b><small class="muted">Kişisel görev</small></button>
-<button onclick="closeSheet();openSharedTask()">🤝<br><b>Ortak görev</b><small class="muted">Topluluk için görev</small></button>
-</div>`)}
-function openGrowth(){openSheet(`<h2>Gelişim kaydı</h2><div class="form">
-<select id="gType" class="field"><option value="book">📚 Kitap / Okuma</option><option value="listen">🎧 Dinleme</option><option value="learn">🧠 Öğrenme</option></select>
-<input id="gTitle" class="field" placeholder="Örn. Risale-i Nur - 3. Lem'a">
-<input id="gSource" class="field" placeholder="Kaynak / yazar (opsiyonel)">
-<textarea id="gBody" class="field textarea" placeholder="Not / özet (opsiyonel)"></textarea>
-<label class="chip"><input id="gPublic" type="checkbox" checked> Toplulukta göster</label>
-<button class="primary" onclick="addGrowth()">Kaydet</button></div>`)}
+function openQuick(){
+  openSheet(`<h2>Hızlı kayıt</h2><p class="muted" style="margin:4px 0 0;font-size:12px">Ne eklemek istersin?</p>
+  <div class="quick">
+    <button onclick="closeSheet();openGrowth()"><span class="qEmo">📚</span><b>Gelişim kaydı</b><small>Okuma, dinleme, öğrenme</small></button>
+    <button onclick="closeSheet();openNote()"><span class="qEmo">📝</span><b>Not</b><small>Kişisel not</small></button>
+    <button onclick="closeSheet();openPlan()"><span class="qEmo">✓</span><b>Yeni plan</b><small>Kişisel görev</small></button>
+    <button onclick="closeSheet();openSharedTask()"><span class="qEmo">🤝</span><b>Ortak görev</b><small>Topluluk için</small></button>
+  </div>`);
+  haptic(10);
+}
+function openMore(btn){
+  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+  btn.classList.add('active');
+  openSheet(`<h2>Diğer</h2><p class="muted" style="margin:4px 0 14px;font-size:12px">Diğer bölümler</p>
+  <div class="quick">
+    <div class="otherItem" onclick="closeSheet();showView('community')"><span class="qEmo">◎</span><div><b>Topluluk</b><br><small class="muted">Sıralama ve akış</small></div></div>
+    <div class="otherItem" onclick="closeSheet();openSettings()"><span class="qEmo">⚙</span><div><b>Ayarlar</b><br><small class="muted">Hesap, tema ve çıkış</small></div></div>
+    <div class="otherItem" onclick="closeSheet();showView('analysis')"><span class="qEmo">◈</span><div><b>Analiz</b><br><small class="muted">Haftalık özet</small></div></div>
+    <div class="otherItem" onclick="closeSheet();showView('plans')"><span class="qEmo">☷</span><div><b>Planlar</b><br><small class="muted">Kişisel görevler</small></div></div>
+  </div>`);
+  haptic(10);
+}
+
+/* ════════ GROWTH ════════ */
+function openGrowth(){
+  openSheet(`<h2>Gelişim kaydı</h2><div class="form">
+    <label class="lbl">Tür</label>
+    <select id="gType" class="field"><option value="book">📚 Kitap / Okuma</option><option value="listen">🎧 Dinleme</option><option value="learn">🧠 Öğrenme</option></select>
+    <label class="lbl">Başlık</label>
+    <input id="gTitle" class="field" placeholder="Örn. Risale-i Nur - 3. Lem'a" enterkeyhint="next">
+    <label class="lbl">Kaynak / Yazar</label>
+    <input id="gSource" class="field" placeholder="Opsiyonel" enterkeyhint="next">
+    <label class="lbl">Not / Özet</label>
+    <textarea id="gBody" class="field textarea" placeholder="Opsiyonel"></textarea>
+    <label class="chip" style="cursor:pointer;display:inline-flex;gap:8px;align-items:center"><input id="gPublic" type="checkbox" checked> Toplulukta göster</label>
+    <button class="primary" onclick="addGrowth()">Kaydet</button>
+  </div>`);
+  setTimeout(()=>$('gTitle')?.focus(),250);
+}
 async function addGrowth(){
-  const title=$('gTitle').value.trim();if(!title)return toast('Başlık gerekli.');
-  const {error}=await supabaseClient.from('growth_records').insert({user_id:me.id,type:$('gType').value,title,source:$('gSource').value.trim()||null,body:$('gBody').value.trim()||null,is_public:$('gPublic').checked});
-  if(error)return toast('Kayıt eklenemedi.');
-  closeSheet();await refresh();toast('Gelişim kaydı eklendi.');
+  const title=$('gTitle').value.trim();if(!title){toast('Başlık gerekli.');haptic([10,30,10]);return}
+  const rec={user_id:me.id,type:$('gType').value,title,source:$('gSource').value.trim()||null,body:$('gBody').value.trim()||null,is_public:$('gPublic').checked};
+  if(TEST_MODE){cache.growth.unshift({id:'g'+Date.now(),...rec,created_at:nowISO(),_new:true})}
+  else{const {error}=await supabaseClient.from('growth_records').insert(rec);if(error){toast('Kayıt eklenemedi.');return}await loadData()}
+  closeSheet();haptic(15);renderAll();toast('✓ Gelişim kaydı eklendi');
 }
 function renderGrowth(){
   const all=cache.growth,q=($('growthSearch')?.value||'').toLowerCase();
-  $('bookCount').textContent=all.filter(x=>x.type==='book').length;$('listenCount').textContent=all.filter(x=>x.type==='listen').length;$('learnCount').textContent=all.filter(x=>x.type==='learn').length;
+  $('bookCount').textContent=all.filter(x=>x.type==='book').length;
+  $('listenCount').textContent=all.filter(x=>x.type==='listen').length;
+  $('learnCount').textContent=all.filter(x=>x.type==='learn').length;
   const a=all.filter(x=>(x.title+' '+(x.source||'')+' '+(x.body||'')).toLowerCase().includes(q));
-  $('growthList').innerHTML=a.length?a.map(x=>`<div class="item"><div class="row"><div><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}</b><small>${esc(x.source||'Kişisel kayıt')} · ${fmtDate(x.created_at)} · ${fmtTime(x.created_at)}</small></div><span class="chip">${x.is_public?'Topluluk':'Özel'}</span></div>${x.body?`<p>${esc(x.body).replace(/\n/g,'<br>')}</p>`:''}<div class="miniActions"><button class="mini" onclick="deleteGrowth('${x.id}')">Sil</button></div></div>`).join(''):'<div class="empty">Henüz gelişim kaydı yok.</div>';
+  $('growthList').innerHTML=a.length?a.map(x=>`
+    <div class="item ${x._new?'new':''}" data-longpress="deleteGrowth" data-id="${x.id}">
+      <div class="row"><div style="min-width:0;flex:1"><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}</b>
+      <small>${esc(x.source||'Kişisel kayıt')} · ${fmtDate(x.created_at)} · ${fmtTime(x.created_at)}</small></div>
+      <span class="chip">${x.is_public?'🌐 Topluluk':'🔒 Özel'}</span></div>
+      ${x.body?`<p>${esc(x.body).replace(/\n/g,'<br>')}</p>`:''}
+    </div>`).join(''):`
+    <div class="empty"><div class="emo">🌱</div><b>Henüz gelişim kaydı yok</b><p>İlk kaydını ekleyerek başla</p><button class="primary" onclick="openGrowth()">+ İlk kaydı ekle</button></div>`;
   renderGrowthChart();
+  attachLongPress();
 }
 function renderGrowthChart(){
   const keys=weekKeys(),counts=keys.map(k=>cache.growth.filter(x=>dateKey(x.created_at)===k).length),max=Math.max(1,...counts);
-  $('growthChart').innerHTML=counts.map((c,i)=>`<div class="barWrap"><span class="barValue">${c||''}</span><div class="bar" style="height:${Math.max(3,c/max*135)}px"></div><span class="barLabel">${['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'][i]}</span></div>`).join('');
-  $('growthWeekTotal').textContent=`${counts.reduce((a,b)=>a+b,0)} kayıt`;const best=Math.max(...counts);$('growthWeekBest').textContent=best?`${['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'][counts.indexOf(best)]}: ${best} kayıt`:'Henüz kayıt yok';
+  const days=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+  $('growthChart').innerHTML=counts.map((c,i)=>`<div class="barWrap"><span class="barValue">${c||''}</span><div class="bar" style="height:${Math.max(3,c/max*135)}px"></div><span class="barLabel">${days[i]}</span></div>`).join('');
+  $('growthWeekTotal').textContent=`${counts.reduce((a,b)=>a+b,0)} kayıt`;
+  const best=Math.max(...counts);
+  $('growthWeekBest').textContent=best?`${days[counts.indexOf(best)]}: ${best} kayıt`:'Henüz kayıt yok';
 }
-async function deleteGrowth(id){if(!confirm('Bu kayıt silinsin mi?'))return;const {error}=await supabaseClient.from('growth_records').delete().eq('id',id).eq('user_id',me.id);if(error)return toast('Silinemedi.');await refresh();toast('Silindi.')}
-function openNote(){openSheet(`<h2>Yeni not</h2><div class="form"><input id="nTitle" class="field" placeholder="Başlık"><textarea id="nBody" class="field textarea" placeholder="Notun..."></textarea><button class="primary" onclick="addNote()">Kaydet</button></div>`)}
-async function addNote(){const title=$('nTitle').value.trim(),body=$('nBody').value.trim();if(!title&&!body)return toast('Bir şey yazmalısın.');const {error}=await supabaseClient.from('notes').insert({user_id:me.id,title:title||'Not',body});if(error)return toast('Not eklenemedi.');closeSheet();await refresh();toast('Not kaydedildi.')}
+async function deleteGrowth(id){
+  confirmSheet('Kaydı sil?','Bu işlem geri alınamaz.',async()=>{
+    if(TEST_MODE){cache.growth=cache.growth.filter(x=>x.id!==id);renderAll();toast('Silindi.');return}
+    const {error}=await supabaseClient.from('growth_records').delete().eq('id',id).eq('user_id',me.id);
+    if(error){toast('Silinemedi.');return}
+    await loadData();renderAll();toast('Silindi.')
+  });
+}
 
-function openPlan(){openSheet(`<h2>Yeni plan</h2><div class="form"><input id="tTitle" class="field" placeholder="Ne yapacaksın?"><textarea id="tDesc" class="field textarea" style="min-height:70px" placeholder="Kısa not (opsiyonel)"></textarea><div class="two"><input id="tDate" type="date" class="field" value="${dateKey(new Date())}"><input id="tTime" type="time" class="field"></div><button class="primary" onclick="addPlan()">Planı ekle</button></div>`)}
-async function addPlan(){const title=$('tTitle').value.trim();if(!title)return toast('Plan adı gerekli.');const {error}=await supabaseClient.from('personal_tasks').insert({user_id:me.id,title,description:$('tDesc').value.trim()||null,due_date:$('tDate').value||dateKey(new Date()),due_time:$('tTime').value||null});if(error)return toast('Plan eklenemedi.');closeSheet();await refresh();toast('Plan eklendi.')}
-async function togglePlan(id,done){const {error}=await supabaseClient.from('personal_tasks').update({completed:done,completed_at:done?nowISO():null}).eq('id',id).eq('user_id',me.id);if(error)return toast('Güncellenemedi.');await refresh()}
-function setPlanFilter(f){planFilter=f;renderPlans()}
+/* ════════ NOTE ════════ */
+function openNote(){
+  openSheet(`<h2>Yeni not</h2><div class="form">
+    <label class="lbl">Başlık</label>
+    <input id="nTitle" class="field" placeholder="Not başlığı" enterkeyhint="next">
+    <label class="lbl">İçerik</label>
+    <textarea id="nBody" class="field textarea" placeholder="Notun..."></textarea>
+    <button class="primary" onclick="addNote()">Kaydet</button></div>`);
+  setTimeout(()=>$('nTitle')?.focus(),250);
+}
+async function addNote(){
+  const title=$('nTitle').value.trim(),body=$('nBody').value.trim();
+  if(!title&&!body){toast('Bir şey yazmalısın.');return}
+  const rec={user_id:me.id,title:title||'Not',body};
+  if(TEST_MODE){cache.notes.unshift({id:'n'+Date.now(),...rec,created_at:nowISO()})}
+  else{const {error}=await supabaseClient.from('notes').insert(rec);if(error){toast('Not eklenemedi.');return}await loadData()}
+  closeSheet();haptic(15);renderAll();toast('✓ Not kaydedildi');
+}
+
+/* ════════ PLANS ════════ */
+function openPlan(){
+  const today=dateKey(new Date());
+  const tomorrow=addDays(today,1);
+  openSheet(`<h2>Yeni plan</h2><div class="form">
+    <label class="lbl">Ne yapacaksın?</label>
+    <input id="tTitle" class="field" placeholder="Örn. Cevşen oku" enterkeyhint="next">
+    <label class="lbl">Not</label>
+    <textarea id="tDesc" class="field" style="min-height:60px" placeholder="Opsiyonel"></textarea>
+    <label class="lbl">Ne zaman?</label>
+    <div class="chips" style="margin-top:4px">
+      <span class="chip tap" onclick="quickDate('${today}')">Bugün</span>
+      <span class="chip tap" onclick="quickDate('${tomorrow}')">Yarın</span>
+      <span class="chip tap" onclick="quickDate('${addDays(today,7)}')">1 hafta sonra</span>
+    </div>
+    <div class="two"><input id="tDate" type="date" class="field" value="${today}"><input id="tTime" type="time" class="field"></div>
+    <button class="primary" onclick="addPlan()">Planı ekle</button></div>`);
+  setTimeout(()=>$('tTitle')?.focus(),250);
+}
+function quickDate(k){$('tDate').value=k;haptic(8)}
+async function addPlan(){
+  const title=$('tTitle').value.trim();if(!title){toast('Plan adı gerekli.');return}
+  const rec={user_id:me.id,title,description:$('tDesc').value.trim()||null,due_date:$('tDate').value||dateKey(new Date()),due_time:$('tTime').value||null,completed:false,completed_at:null};
+  if(TEST_MODE){cache.tasks.unshift({id:'t'+Date.now(),...rec,_new:true})}
+  else{const {error}=await supabaseClient.from('personal_tasks').insert(rec);if(error){toast('Plan eklenemedi.');return}await loadData()}
+  closeSheet();haptic(15);renderAll();toast('✓ Plan eklendi');
+}
+async function togglePlan(id,done){
+  haptic(done?12:6);
+  if(TEST_MODE){const t=cache.tasks.find(x=>x.id===id);if(t){t.completed=done;t.completed_at=done?nowISO():null}renderAll();return}
+  const {error}=await supabaseClient.from('personal_tasks').update({completed:done,completed_at:done?nowISO():null}).eq('id',id).eq('user_id',me.id);
+  if(error){toast('Güncellenemedi.');return}
+  await loadData();renderAll();
+}
+function setPlanFilter(f,btn){
+  planFilter=f;
+  document.querySelectorAll('[data-pfilter]').forEach(b=>b.classList.remove('active'));
+  btn?.classList.add('active');
+  haptic(6);renderPlans();
+}
 function renderPlans(){
-  const today=dateKey(new Date());let a=[...cache.tasks];if(planFilter==='today')a=a.filter(t=>t.due_date===today);if(planFilter==='open')a=a.filter(t=>!t.completed);if(planFilter==='done')a=a.filter(t=>t.completed);a.sort((x,y)=>(x.completed-y.completed)||x.due_date.localeCompare(y.due_date));
-  $('plansList').innerHTML=a.length?a.map(t=>`<div class="item"><div class="row"><div class="row" style="justify-content:flex-start"><button class="check ${t.completed?'done':''}" onclick="togglePlan('${t.id}',${!t.completed})">${t.completed?'✓':''}</button><div><b class="${t.completed?'taskDone':''}">${esc(t.title)}</b><small>${t.due_date===today?'Bugün':fmtDate(t.due_date)}${t.due_time?' · '+esc(t.due_time):''}</small></div></div></div></div>`).join(''):'<div class="empty">Bu filtrede plan yok.</div>';
-  $('plansOpenToday').textContent=cache.tasks.filter(t=>t.due_date===today&&!t.completed).length;$('plansDoneWeek').textContent=cache.tasks.filter(t=>t.completed_at&&weekKeys().includes(dateKey(t.completed_at))).length;$('planStreak').textContent=currentStreak();
+  const today=dateKey(new Date());let a=[...cache.tasks];
+  if(planFilter==='today')a=a.filter(t=>t.due_date===today);
+  if(planFilter==='open')a=a.filter(t=>!t.completed);
+  if(planFilter==='done')a=a.filter(t=>t.completed);
+  a.sort((x,y)=>(x.completed-y.completed)||x.due_date.localeCompare(y.due_date));
+  $('plansList').innerHTML=a.length?a.map(t=>`
+    <div class="item ${t._new?'new':''}">
+      <div class="row"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+        <button class="check ${t.completed?'done':''}" onclick="togglePlan('${t.id}',${!t.completed})">${t.completed?'✓':''}</button>
+        <div style="min-width:0;flex:1"><b class="${t.completed?'taskDone':''}">${esc(t.title)}</b>
+        <small>${t.due_date===today?'📅 Bugün':fmtDate(t.due_date)}${t.due_time?' · ⏰ '+esc(t.due_time):''}</small></div>
+      </div></div>
+    </div>`).join(''):`
+    <div class="empty"><div class="emo">🗓️</div><b>Bu filtrede plan yok</b><p>Yeni bir plan ekleyebilirsin</p><button class="primary" onclick="openPlan()">+ Plan ekle</button></div>`;
+  $('plansOpenToday').textContent=cache.tasks.filter(t=>t.due_date===today&&!t.completed).length;
+  $('plansDoneWeek').textContent=cache.tasks.filter(t=>t.completed_at&&weekKeys().includes(dateKey(t.completed_at))).length;
+  $('planStreak').textContent=currentStreak();
 }
 
+/* ════════ SHARED TASKS ════════ */
 function openSharedTask(){
- openSheet(`<h2>Yeni ortak görev</h2><div class="form"><input id="sTitle" class="field" placeholder="Örn. Cevşen"><textarea id="sDesc" class="field textarea" placeholder="Açıklama (opsiyonel)"></textarea><div class="two"><input id="sAmount" type="number" min="1" step="0.01" class="field" placeholder="Toplam miktar"><input id="sUnit" class="field" placeholder="Birim: Bab, sayfa, tekrar..."></div><button class="primary" onclick="addSharedTask()">Görevi oluştur</button></div>`);
+  openSheet(`<h2>Yeni ortak görev</h2><div class="form">
+    <label class="lbl">Başlık</label>
+    <input id="sTitle" class="field" placeholder="Örn. Cevşen Hatmi" enterkeyhint="next">
+    <label class="lbl">Açıklama</label>
+    <textarea id="sDesc" class="field" style="min-height:60px" placeholder="Opsiyonel"></textarea>
+    <div class="two"><div><label class="lbl">Toplam miktar</label><input id="sAmount" type="number" min="1" step="1" inputmode="numeric" class="field" placeholder="100"></div>
+    <div><label class="lbl">Birim</label><input id="sUnit" class="field" placeholder="Bab, sayfa..."></div></div>
+    <button class="primary" onclick="addSharedTask()">Görevi oluştur</button></div>`);
+  setTimeout(()=>$('sTitle')?.focus(),250);
 }
 async function addSharedTask(){
- const title=$('sTitle').value.trim(),amount=Number($('sAmount').value),unit=$('sUnit').value.trim();if(!title||!amount||!unit)return toast('Başlık, miktar ve birim gerekli.');
- const {data,error}=await supabaseClient.from('shared_tasks').insert({title,description:$('sDesc').value.trim()||null,total_amount:amount,unit,created_by:me.id}).select().single();
- if(error)return toast('Ortak görev oluşturulamadı.');
- await supabaseClient.from('shared_task_members').insert({shared_task_id:data.id,user_id:me.id,assigned_amount:0,completed_amount:0});
- closeSheet();await refresh();toast('Ortak görev oluşturuldu.');
+  const title=$('sTitle').value.trim(),amount=Number($('sAmount').value),unit=$('sUnit').value.trim();
+  if(!title||!amount||!unit){toast('Başlık, miktar ve birim gerekli.');haptic([10,30,10]);return}
+  const rec={title,description:$('sDesc').value.trim()||null,total_amount:amount,unit,created_by:me.id,status:'active'};
+  if(TEST_MODE){cache.shared.unshift({id:'s'+Date.now(),...rec,_members:[],_new:true})}
+  else{
+    const {data,error}=await supabaseClient.from('shared_tasks').insert(rec).select().single();
+    if(error){toast('Oluşturulamadı.');return}
+    await supabaseClient.from('shared_task_members').insert({shared_task_id:data.id,user_id:me.id,assigned_amount:0,completed_amount:0});
+    await loadData();
+  }
+  closeSheet();haptic(15);renderAll();toast('✓ Ortak görev oluşturuldu');
 }
+
+/* --- PAY ALMA SHEET --- */
 async function openContribution(taskId){
- const task=cache.shared.find(x=>x.id===taskId);if(!task)return;
- const {data:members}=await supabaseClient.from('shared_task_members').select('*,profiles(display_name,username)').eq('shared_task_id',taskId);
- const mine=(members||[]).find(x=>x.user_id===me.id);
- openSheet(`<h2>${esc(task.title)}</h2><p class="muted">${esc(task.description||'')} · Hedef: ${task.total_amount} ${esc(task.unit)}</p><div class="form"><div class="two"><input id="claimAmount" type="number" min="0" step="0.01" value="${mine?.assigned_amount||0}" class="field" placeholder="Payın"><button class="secondary" onclick="claimTask('${task.id}')">Payımı kaydet</button></div><p class="hint">Payını aldıktan sonra tamamladığın miktarı ayrıca işaretleyebilirsin.</p><input id="completeAmount" type="number" min="0" step="0.01" value="${mine?.completed_amount||0}" class="field" placeholder="Tamamlanan miktar"><button class="primary" onclick="completeTask('${task.id}')">Tamamladım</button></div>`);
+  const task=cache.shared.find(x=>x.id===taskId);if(!task)return;
+
+  let members=[];
+  if(TEST_MODE){
+    members=(task._members||[]).slice();
+  } else {
+    const {data}=await supabaseClient.from('shared_task_members')
+      .select('*,profiles(display_name,username)')
+      .eq('shared_task_id',taskId);
+    members=(data||[]).map(m=>({
+      user_id:m.user_id,
+      username:m.profiles?.username||'',
+      display_name:m.profiles?.display_name||'Kullanıcı',
+      assigned_amount:Number(m.assigned_amount||0),
+      completed_amount:Number(m.completed_amount||0)
+    }));
+  }
+
+  const total=Number(task.total_amount);
+  const taken=members.reduce((a,m)=>a+m.assigned_amount,0);
+  const remaining=Math.max(0,total-taken);
+  const mine=members.find(m=>m.user_id===me.id);
+  const myClaim=mine?.assigned_amount||0;
+  const myDone=mine?.completed_amount||0;
+  const myRemaining=Math.max(0,myClaim-myDone);
+  const myMax=myClaim+remaining;
+  const poolPct=Math.min(100,taken/total*100);
+  const poolFull=remaining===0;
+
+  const chipsHtml=members.length?members.map(m=>{
+    const isMe=m.user_id===me.id;
+    const done=m.assigned_amount>0&&m.completed_amount>=m.assigned_amount;
+    const pct=m.assigned_amount?Math.round(m.completed_amount/m.assigned_amount*100):0;
+    const color=done?'#6fd7a3':(pct>0?'#f2c66d':'#8f98a8');
+    return `<span class="payChip" style="border:1px solid ${color}55;background:${color}18;color:${color}">
+      ${done?'✓ ':''}${esc(m.display_name)}${isMe?' <b>(sen)</b>':''}
+      <b style="margin-left:2px">${m.completed_amount}/${m.assigned_amount}</b>
+    </span>`;
+  }).join(''):'<span class="muted" style="font-size:12px">Henüz kimse pay almadı.</span>';
+
+  openSheet(`
+    <h2>🤝 ${esc(task.title)}</h2>
+    <p class="muted" style="margin:4px 0 14px;font-size:12px">${esc(task.description||'')}</p>
+
+    <div class="poolBox">
+      <div class="row" style="margin-bottom:4px">
+        <span class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.6px">Pay havuzu</span>
+        <b style="font-size:13px">${taken} / ${total} ${esc(task.unit)}</b>
+      </div>
+      <div class="poolBar ${poolFull?'full':''}"><i style="width:${poolPct}%"></i></div>
+      <div class="row">
+        <span style="font-size:11px;color:#6fd7a3">Alınan: <b>${taken}</b></span>
+        <span style="font-size:11px;color:${poolFull?'#ef7777':'#f2c66d'}">
+          ${poolFull?'🔒 Havuz doldu':'Kalan: <b>'+remaining+'</b>'}
+        </span>
+      </div>
+    </div>
+
+    <label class="lbl" style="margin-top:8px">Pay sahipleri (${members.length})</label>
+    <div class="chips" style="margin:6px 0 16px">${chipsHtml}</div>
+
+    ${myClaim>0?`
+      <div class="myPayBox">
+        <div class="row" style="margin-bottom:6px">
+          <span style="font-size:12px;color:#baf2d5">🔒 Senin payın kilitli</span>
+          <b style="color:#6fd7a3">${myClaim} ${esc(task.unit)}</b>
+        </div>
+        <small class="muted" style="font-size:11px">Tamamlanan: ${myDone} / ${myClaim} · Kalan: ${myRemaining}</small>
+        <div class="progress" style="margin-top:8px;height:6px"><i style="width:${myClaim?myDone/myClaim*100:0}%;background:linear-gradient(90deg,#6fd7a3,#4a9e79)"></i></div>
+      </div>
+    `:`
+      <div class="emptyPayBox">
+        <small class="muted" style="font-size:12px">Henüz pay almadın · Havuzda <b style="color:#f2c66d">${remaining} ${esc(task.unit)}</b> boşta</small>
+      </div>
+    `}
+
+    ${(remaining>0||myClaim>0)?`
+      <label class="lbl">${myClaim>0?'Payını güncelle':'Pay al'}</label>
+      <div class="chips" style="margin:6px 0 8px">
+        ${[1,5,10,25].filter(n=>n<=remaining+myClaim).map(n=>`<span class="chip tap" onclick="claimAdd(${n})">+${n}</span>`).join('')}
+        ${remaining>0?`<span class="chip tap" onclick="claimSetMax()">Tümü (+${remaining})</span>`:''}
+      </div>
+      <div class="stepper"><button onclick="stepVal('claimAmount',-1)">−</button><input id="claimAmount" type="number" value="${myClaim}" min="0" max="${myMax}" step="1"><button onclick="stepVal('claimAmount',1)">+</button></div>
+      <small class="muted" style="display:block;margin-top:6px;font-size:11px">En fazla <b>${myMax}</b> ${esc(task.unit)} alabilirsin</small>
+      <button class="secondary" style="width:100%;margin-top:10px" onclick="claimTask('${task.id}')">🔒 Payı kilitle</button>
+    `:`
+      <div style="background:#251416;border:1px solid #4b2929;border-radius:14px;padding:14px;text-align:center">
+        <small style="color:#ffb2b2;font-size:12px">⛔ Havuz doldu, yeni pay alınamaz</small>
+      </div>
+    `}
+
+    ${myClaim>0?`
+      <label class="lbl" style="margin-top:18px">Tamamladığım</label>
+      <div class="stepper"><button onclick="stepVal('completeAmount',-1)">−</button><input id="completeAmount" type="number" value="${myDone}" min="0" max="${myClaim}" step="1"><button onclick="stepVal('completeAmount',1)">+</button></div>
+      <div class="chips" style="margin-top:8px">
+        <span class="chip tap" onclick="completeAdd(1)">+1</span>
+        <span class="chip tap" onclick="completeAdd(5)">+5</span>
+        ${myRemaining>0?`<span class="chip tap" onclick="completeSetMax()">Kalanı tamamla (+${myRemaining})</span>`:''}
+      </div>
+      <button class="primary" style="width:100%;margin-top:12px" onclick="completeTask('${task.id}')">${myDone>=myClaim?'✓ Tamamlandı olarak kaydet':'✓ Kaydet'}</button>
+    `:''}
+  `);
 }
-async function claimTask(id){const amount=Number($('claimAmount').value)||0;let {data}=await supabaseClient.from('shared_task_members').select('id').eq('shared_task_id',id).eq('user_id',me.id).maybeSingle();let error;if(data){({error}=await supabaseClient.from('shared_task_members').update({assigned_amount:amount}).eq('id',data.id))}else{({error}=await supabaseClient.from('shared_task_members').insert({shared_task_id:id,user_id:me.id,assigned_amount:amount,completed_amount:0}))}if(error)return toast('Pay kaydedilemedi.');await refresh();toast('Payın kaydedildi.')}
-async function completeTask(id){const amount=Number($('completeAmount').value)||0;let {data}=await supabaseClient.from('shared_task_members').select('id').eq('shared_task_id',id).eq('user_id',me.id).maybeSingle();let error;if(data){({error}=await supabaseClient.from('shared_task_members').update({completed_amount:amount}).eq('id',data.id))}else{({error}=await supabaseClient.from('shared_task_members').insert({shared_task_id:id,user_id:me.id,assigned_amount:amount,completed_amount:amount}))}if(error)return toast('Tamamlanamadı.');closeSheet();await refresh();toast('Katkın güncellendi.')}
+function claimAdd(n){const el=$('claimAmount');if(!el)return;const max=Number(el.max)||999;el.value=Math.min(max,(Number(el.value)||0)+n);haptic(6)}
+function claimSetMax(){const el=$('claimAmount');if(!el)return;el.value=Number(el.max)||0;haptic(6)}
+function completeAdd(n){const el=$('completeAmount');if(!el)return;const max=Number(el.max)||999;el.value=Math.min(max,(Number(el.value)||0)+n);haptic(6)}
+function completeSetMax(){const el=$('completeAmount');if(!el)return;el.value=Number(el.max)||0;haptic(6)}
+function stepVal(id,delta){const el=$(id);if(!el)return;const max=Number(el.max)||999999;el.value=Math.max(0,Math.min(max,(Number(el.value)||0)+delta));haptic(6)}
+
+async function claimTask(id){
+  const task=cache.shared.find(x=>x.id===id);if(!task)return;
+  const amount=Number($('claimAmount').value)||0;
+  const total=Number(task.total_amount);
+
+  if(TEST_MODE){
+    const members=task._members||[];
+    const others=members.filter(m=>m.user_id!==me.id).reduce((a,m)=>a+m.assigned_amount,0);
+    if(amount+others>total){toast(`⛔ Havuzda yeterli pay yok. Kalan: ${Math.max(0,total-others)}`);haptic([10,30,10]);return}
+    const mine=members.find(m=>m.user_id===me.id);
+    if(mine){mine.assigned_amount=amount;if(mine.completed_amount>amount)mine.completed_amount=amount}
+    else{members.push({user_id:me.id,username:profile.username,display_name:profile.display_name,assigned_amount:amount,completed_amount:0})}
+    task._members=members;
+    haptic(18);toast(`🔒 ${amount} ${task.unit} kilitlendi`);renderAll();openContribution(id);return;
+  }
+
+  const {data:allMembers}=await supabaseClient.from('shared_task_members').select('user_id,assigned_amount').eq('shared_task_id',id);
+  const others=(allMembers||[]).filter(m=>m.user_id!==me.id).reduce((a,m)=>a+Number(m.assigned_amount||0),0);
+  if(amount+others>total){toast(`⛔ Havuzda yeterli pay yok. Kalan: ${Math.max(0,total-others)}`);haptic([10,30,10]);return}
+
+  let {data}=await supabaseClient.from('shared_task_members').select('id').eq('shared_task_id',id).eq('user_id',me.id).maybeSingle();
+  let error;
+  if(data){({error}=await supabaseClient.from('shared_task_members').update({assigned_amount:amount}).eq('id',data.id))}
+  else{({error}=await supabaseClient.from('shared_task_members').insert({shared_task_id:id,user_id:me.id,assigned_amount:amount,completed_amount:0}))}
+  if(error){toast('Pay kaydedilemedi.');return}
+  haptic(18);toast(`🔒 ${amount} ${task.unit} kilitlendi`);await loadData();renderAll();openContribution(id);
+}
+
+async function completeTask(id){
+  const task=cache.shared.find(x=>x.id===id);if(!task)return;
+  const amount=Number($('completeAmount').value)||0;
+
+  if(TEST_MODE){
+    const members=task._members||[];
+    const mine=members.find(m=>m.user_id===me.id);
+    if(!mine){toast('Önce pay almalısın.');haptic([10,30,10]);return}
+    if(amount>mine.assigned_amount){toast(`Payından fazlasını tamamlayamazsın (max ${mine.assigned_amount})`);haptic([10,30,10]);return}
+    mine.completed_amount=amount;
+    const done=amount>=mine.assigned_amount&&mine.assigned_amount>0;
+    const total=Number(task.total_amount);
+    const taken=members.reduce((a,m)=>a+m.assigned_amount,0);
+    const allDone=taken>=total && members.some(m=>m.assigned_amount>0) && members.every(m=>m.completed_amount>=m.assigned_amount);
+    renderAll();
+    if(done){
+      closeSheet();haptic([15,50,15]);
+      toast(allDone?`🎉 ${task.title} — görev tamamen tamamlandı!`:`🎉 ${task.title} — payını tamamladın!`);
+    } else {
+      haptic(14);toast(`✓ ${amount}/${mine.assigned_amount} kaydedildi`);openContribution(id);
+    }
+    return;
+  }
+
+  let {data}=await supabaseClient.from('shared_task_members').select('id,assigned_amount').eq('shared_task_id',id).eq('user_id',me.id).maybeSingle();
+  if(!data){toast('Önce pay almalısın.');return}
+  if(amount>Number(data.assigned_amount||0)){toast(`Payından fazlasını tamamlayamazsın (max ${data.assigned_amount})`);haptic([10,30,10]);return}
+  const {error}=await supabaseClient.from('shared_task_members').update({completed_amount:amount}).eq('id',data.id);
+  if(error){toast('Kaydedilemedi.');return}
+  const done=amount>=Number(data.assigned_amount||0)&&Number(data.assigned_amount||0)>0;
+  // allDone kontrolü
+  const {data:allM}=await supabaseClient.from('shared_task_members').select('assigned_amount,completed_amount').eq('shared_task_id',id);
+  const taken=(allM||[]).reduce((a,m)=>a+Number(m.assigned_amount||0),0);
+  const total=Number(task.total_amount);
+  const allDone=taken>=total && (allM||[]).some(m=>Number(m.assigned_amount)>0) && (allM||[]).every(m=>Number(m.completed_amount)>=Number(m.assigned_amount));
+  await loadData();renderAll();
+  if(done){
+    closeSheet();haptic([15,50,15]);
+    toast(allDone?`🎉 ${task.title} — görev tamamen tamamlandı!`:`🎉 ${task.title} — payını tamamladın!`);
+  } else {
+    haptic(14);toast(`✓ ${amount}/${data.assigned_amount} kaydedildi`);openContribution(id);
+  }
+}
+
 async function renderSharedTasks(){
- const {data:rows}=await supabaseClient.from('shared_task_members').select('*');const members=rows||[];
- let myTotal=0;
- $('sharedTasksList').innerHTML=cache.shared.length?cache.shared.map(t=>{const ms=members.filter(x=>x.shared_task_id===t.id),done=ms.reduce((a,x)=>a+Number(x.completed_amount||0),0),pct=Math.min(100,done/Number(t.total_amount)*100);myTotal+=Number(ms.find(x=>x.user_id===me.id)?.completed_amount||0);return `<div class="item"><div class="row"><div><b>🤝 ${esc(t.title)}</b><small>${done} / ${t.total_amount} ${esc(t.unit)}</small></div><button class="secondary" onclick="openContribution('${t.id}')">Katıl</button></div><div class="progress"><i style="width:${pct}%"></i></div><small>${Math.round(pct)}% tamamlandı · ${ms.length} kişi katkı verdi</small></div>`}).join(''):'<div class="empty">Henüz ortak görev yok.</div>';
- $('sharedCount').textContent=cache.shared.length;$('myContribution').textContent=myTotal;
- let avg=0;if(cache.shared.length){let ps=cache.shared.map(t=>{const ms=members.filter(x=>x.shared_task_id===t.id),d=ms.reduce((a,x)=>a+Number(x.completed_amount||0),0);return Math.min(100,d/Number(t.total_amount)*100)});avg=Math.round(ps.reduce((a,b)=>a+b,0)/ps.length)}$('sharedPercent').textContent=avg+'%';
+  let allMembers=[];
+  if(TEST_MODE){
+    cache.shared.forEach(t=>{(t._members||[]).forEach(m=>allMembers.push({...m,shared_task_id:t.id}))});
+  } else {
+    const {data}=await supabaseClient.from('shared_task_members').select('*,profiles(display_name)');
+    allMembers=(data||[]).map(m=>({
+      shared_task_id:m.shared_task_id,
+      user_id:m.user_id,
+      display_name:m.profiles?.display_name||'Kullanıcı',
+      assigned_amount:Number(m.assigned_amount||0),
+      completed_amount:Number(m.completed_amount||0),
+    }));
+  }
+
+  // Görevleri zenginleştir
+  const enriched=cache.shared.map(t=>{
+    const ms=allMembers.filter(x=>x.shared_task_id===t.id);
+    const taken=ms.reduce((a,x)=>a+x.assigned_amount,0);
+    const done=ms.reduce((a,x)=>a+x.completed_amount,0);
+    const total=Number(t.total_amount);
+    const remaining=Math.max(0,total-taken);
+    const pct=Math.min(100,done/total*100);
+    const allClaimed=taken>=total;
+    const allDone=allClaimed && ms.some(m=>m.assigned_amount>0) && ms.every(m=>m.assigned_amount===0 || m.completed_amount>=m.assigned_amount);
+    const isComplete=allDone || (taken>=total && done>=total);
+    const mine=ms.find(x=>x.user_id===me.id);
+    return {t,ms,taken,done,total,remaining,pct,mine,isComplete};
+  });
+
+  const active=enriched.filter(x=>!x.isComplete);
+  const completed=enriched.filter(x=>x.isComplete);
+
+  let myTotal=0;
+  enriched.forEach(e=>{myTotal+=(e.mine?.completed_amount||0)});
+
+  // AKTİF
+  $('sharedTasksList').innerHTML=active.length?active.map(e=>{
+    const {t,ms,taken,done,total,remaining,pct,mine}=e;
+    const chipsHtml=ms.length?ms.slice(0,6).map(m=>{
+      const mDone=m.assigned_amount>0&&m.completed_amount>=m.assigned_amount;
+      const pctM=m.assigned_amount?Math.round(m.completed_amount/m.assigned_amount*100):0;
+      const color=mDone?'#6fd7a3':(pctM>0?'#f2c66d':'#8f98a8');
+      return `<span class="payChip" style="border:1px solid ${color}44;background:${color}15;color:${color}">
+        ${mDone?'✓ ':''}${esc((m.display_name||'').split(' ')[0])} ${m.completed_amount}/${m.assigned_amount}
+      </span>`;
+    }).join('')+(ms.length>6?`<span class="payChip" style="background:var(--chip-bg);color:var(--chip-fg)">+${ms.length-6}</span>`:''):'';
+
+    let myLabel='';
+    if(mine&&mine.assigned_amount>0){
+      const mDone=mine.completed_amount>=mine.assigned_amount;
+      myLabel=mDone
+        ?`<span class="chip good" style="font-size:10px;padding:4px 8px">✓ Payın tamam</span>`
+        :`<span class="chip warn" style="font-size:10px;padding:4px 8px">🔒 ${mine.completed_amount}/${mine.assigned_amount}</span>`;
+    }
+
+    return `<div class="item ${t._new?'new':''}">
+      <div class="row" style="margin-bottom:8px;align-items:flex-start">
+        <div style="min-width:0;flex:1">
+          <b>🤝 ${esc(t.title)}</b>
+          <small>${done} / ${total} ${esc(t.unit)} tamamlandı · ${remaining===0?'🔒 havuz doldu':remaining+' boşta'}</small>
+        </div>
+        <button class="secondary" style="padding:8px 12px;font-size:12px;white-space:nowrap" onclick="openContribution('${t.id}')">${remaining>0||mine?'Detay':'Pay al'}</button>
+      </div>
+      <div class="progress"><i style="width:${pct}%"></i></div>
+      ${myLabel?`<div style="margin-top:8px">${myLabel}</div>`:''}
+      ${chipsHtml?`<div class="chips" style="margin-top:10px">${chipsHtml}</div>`:''}
+    </div>`;
+  }).join(''):`
+    <div class="empty"><div class="emo">🤝</div><b>${completed.length?'Tüm görevler tamamlandı!':'Henüz ortak görev yok'}</b><p>${completed.length?'Aşağıdaki arşive göz atabilirsin':'Topluluk için bir görev oluştur'}</p><button class="primary" onclick="openSharedTask()">+ Yeni görev</button></div>`;
+
+  // ARŞİV
+  if(completed.length){
+    $('archiveWrap').innerHTML=`
+      <div class="archiveToggle" onclick="toggleArchive(this)">
+        <div>
+          <b>📦 Arşiv · ${completed.length} tamamlanan görev</b>
+          <small class="muted" style="display:block;margin-top:2px;font-size:11px">Tamamlanan görevler burada saklanır</small>
+        </div>
+        <span class="arrow">▾</span>
+      </div>
+      <div class="archiveBody" id="archiveBody">
+        <div class="list">
+          ${completed.map(e=>{
+            const {t,ms,done,total}=e;
+            const chipsHtml=ms.map(m=>{
+              const mDone=m.assigned_amount>0&&m.completed_amount>=m.assigned_amount;
+              const color=mDone?'#6fd7a3':'#8f98a8';
+              return `<span class="payChip" style="border:1px solid ${color}44;background:${color}15;color:${color}">
+                ${mDone?'✓ ':''}${esc((m.display_name||'').split(' ')[0])} ${m.completed_amount}/${m.assigned_amount}
+              </span>`;
+            }).join('');
+            return `<div class="item done">
+              <div class="row" style="margin-bottom:8px">
+                <div style="min-width:0;flex:1">
+                  <b>✅ ${esc(t.title)}</b>
+                  <small>${done}/${total} ${esc(t.unit)} · ${ms.length} kişi tamamladı</small>
+                </div>
+                <span class="chip good" style="font-size:10px;padding:4px 8px;white-space:nowrap">Tamamlandı</span>
+              </div>
+              <div class="progress"><i style="width:100%;background:linear-gradient(90deg,#6fd7a3,#4a9e79)"></i></div>
+              ${chipsHtml?`<div class="chips" style="margin-top:10px">${chipsHtml}</div>`:''}
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    $('archiveWrap').innerHTML='';
+  }
+
+  $('sharedCount').textContent=active.length;
+  $('myContribution').textContent=myTotal;
+
+  let avg=0;
+  if(active.length){avg=Math.round(active.reduce((a,e)=>a+e.pct,0)/active.length)}
+  $('sharedPercent').textContent=avg+'%';
 }
+
+function toggleArchive(el){
+  el.classList.toggle('open');
+  const body=document.getElementById('archiveBody');
+  if(body)body.classList.toggle('open');
+  haptic(8);
+}
+
+/* ════════ COMMUNITY ════════ */
 async function communityData(){
- const {data:g}=await supabaseClient.from('growth_records').select('id,user_id,type,title,source,body,created_at,is_public,profiles(display_name,username)').eq('is_public',true).order('created_at',{ascending:false}).limit(100);
- return g||[];
+  if(TEST_MODE){
+    const others=window._profiles.filter(p=>p.id!=='test-user-1');
+    return cache.growth.filter(x=>x.is_public).map((x,i)=>{
+      const owner=i%3===0?profile:others[i%others.length];
+      return {...x,profiles:owner};
+    });
+  }
+  const {data:g}=await supabaseClient.from('growth_records').select('id,user_id,type,title,source,body,created_at,is_public,profiles(display_name,username)').eq('is_public',true).order('created_at',{ascending:false}).limit(100);
+  return g||[];
 }
-async function renderCommunity(){
- const feed=await communityData(),keys=weekKeys();const weekly=profileList().map(p=>({id:p.id,name:p.display_name,count:feed.filter(x=>x.user_id===p.id&&keys.includes(dateKey(x.created_at))).length}));
- weekly.sort((a,b)=>b.count-a.count);const total=weekly.reduce((a,b)=>a+b.count,0);
- $('cTotal').textContent=total;$('cBest').textContent=weekly[0]?.name||'—';$('cBestMeta').textContent=weekly[0]?`${weekly[0].count} kayıt`:'Henüz veri yok';
- $('communityRanking').innerHTML=weekly.map((x,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div class="rankMain"><div class="row"><b>${esc(x.name)}</b><span class="chip">${x.count} kayıt</span></div><div class="rankBar"><i style="width:${total?x.count/Math.max(1,weekly[0].count)*100:0}%"></i></div></div></div>`).join('');
- const counts=weekly.map(x=>x.count),max=Math.max(1,...counts);$('communityChart').innerHTML=weekly.map(x=>`<div class="barWrap"><span class="barValue">${x.count}</span><div class="bar" style="height:${Math.max(3,x.count/max*135)}px"></div><span class="barLabel">${esc(x.name)}</span></div>`).join('');
- $('communityFeed').innerHTML=feed.length?feed.slice(0,30).map(x=>`<div class="item activity" onclick="openCommunityDetail('${x.id}')"><div class="row"><div><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.profiles?.display_name||'Kullanıcı')}</b><small>${esc(x.title)}${x.source?' · '+esc(x.source):''}</small></div><span class="chip">${fmtDate(x.created_at)}</span></div>${x.body?`<p><b>Not:</b> ${esc(x.body.length>150?x.body.slice(0,150)+'…':x.body)}</p>`:'<p class="muted">Not eklenmemiş.</p>'}</div>`).join(''):'<div class="empty">Toplulukta henüz paylaşılmış kayıt yok.</div>';
- window._communityFeed=feed;
-}
-function openCommunityDetail(id){const x=(window._communityFeed||[]).find(a=>a.id===id);if(!x)return;openSheet(`<h2>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.profiles?.display_name||'Kullanıcı')}</h2><div class="item"><b>${esc(x.title)}</b><small>${esc(x.source||'')} · ${fmtDate(x.created_at)}</small>${x.body?`<p><b>Not / Özet:</b><br>${esc(x.body).replace(/\n/g,'<br>')}</p>`:'<p class="muted">Bu kayda özet veya not eklenmemiş.</p>'}</div>`)}
 function profileList(){return window._profiles||[profile]}
-async function loadProfiles(){const {data}=await supabaseClient.from('profiles').select('id,username,display_name').order('display_name');window._profiles=data||[profile]}
-async function renderCommunitySafe(){await loadProfiles();await renderCommunity()}
-async function currentSharedProgress(){const {data}=await supabaseClient.from('shared_task_members').select('shared_task_id,completed_amount');const rows=data||[];if(!cache.shared.length)return 0;const p=cache.shared.map(t=>{const d=rows.filter(x=>x.shared_task_id===t.id).reduce((a,x)=>a+Number(x.completed_amount||0),0);return Math.min(100,d/Number(t.total_amount)*100)});return Math.round(p.reduce((a,b)=>a+b,0)/p.length)}
-function currentStreak(){let k=dateKey(new Date()),streak=0;const has=d=>cache.growth.some(x=>dateKey(x.created_at)===d)||cache.tasks.some(x=>x.completed_at&&dateKey(x.completed_at)===d);if(!has(k))k=addDays(k,-1);while(has(k)){streak++;k=addDays(k,-1)}return streak}
+async function renderCommunity(){
+  const feed=await communityData(),keys=weekKeys();
+  const weekly=profileList().map(p=>({id:p.id,name:p.display_name,count:feed.filter(x=>x.user_id===p.id&&keys.includes(dateKey(x.created_at))).length}));
+  weekly.sort((a,b)=>b.count-a.count);
+  const total=weekly.reduce((a,b)=>a+b.count,0);
+  $('cTotal').textContent=total;
+  $('cBest').textContent=weekly[0]?.name||'—';
+  $('cBestMeta').textContent=weekly[0]?`${weekly[0].count} kayıt`:'Henüz veri yok';
+  $('communityRanking').innerHTML=weekly.map((x,i)=>`
+    <div class="rank"><div class="rankNo">${i+1}</div>
+    <div class="rankMain"><div class="row"><b>${esc(x.name)}</b><span class="chip">${x.count} kayıt</span></div>
+    <div class="rankBar"><i style="width:${weekly[0]?.count?x.count/Math.max(1,weekly[0].count)*100:0}%"></i></div></div></div>`).join('');
+  const counts=weekly.map(x=>x.count),max=Math.max(1,...counts);
+  $('communityChart').innerHTML=weekly.map(x=>`<div class="barWrap"><span class="barValue">${x.count}</span><div class="bar" style="height:${Math.max(3,x.count/max*135)}px"></div><span class="barLabel">${esc(x.name.split(' ')[0])}</span></div>`).join('');
+  $('communityFeed').innerHTML=feed.length?feed.slice(0,30).map(x=>`
+    <div class="item activity" onclick="openCommunityDetail('${x.id}')">
+      <div class="row"><div style="min-width:0;flex:1"><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.profiles?.display_name||'Kullanıcı')}</b>
+      <small>${esc(x.title)}${x.source?' · '+esc(x.source):''}</small></div>
+      <span class="chip">${fmtDate(x.created_at)}</span></div>
+      ${x.body?`<p><b>Not:</b> ${esc(x.body.length>150?x.body.slice(0,150)+'…':x.body)}</p>`:'<p class="muted">Not eklenmemiş.</p>'}
+    </div>`).join(''):`<div class="empty"><div class="emo">🌐</div><b>Toplulukta paylaşım yok</b><p>İlk paylaşımı sen yap</p><button class="primary" onclick="openGrowth()">+ Kayıt ekle</button></div>`;
+  window._communityFeed=feed;
+}
+function openCommunityDetail(id){
+  const x=(window._communityFeed||[]).find(a=>a.id===id);if(!x)return;
+  openSheet(`<h2>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.profiles?.display_name||'Kullanıcı')}</h2>
+    <div class="item"><b>${esc(x.title)}</b><small>${esc(x.source||'')} · ${fmtDate(x.created_at)}</small>
+    ${x.body?`<p><b>Not / Özet:</b><br>${esc(x.body).replace(/\n/g,'<br>')}</p>`:'<p class="muted">Bu kayda özet veya not eklenmemiş.</p>'}</div>`);
+}
+async function currentSharedProgress(){
+  let allMembers=[];
+  if(TEST_MODE){
+    cache.shared.forEach(t=>{(t._members||[]).forEach(m=>allMembers.push({...m,shared_task_id:t.id}))});
+  } else {
+    const {data}=await supabaseClient.from('shared_task_members').select('shared_task_id,completed_amount');
+    allMembers=data||[];
+  }
+  if(!cache.shared.length)return 0;
+  const p=cache.shared.map(t=>{
+    const d=allMembers.filter(x=>x.shared_task_id===t.id).reduce((a,x)=>a+Number(x.completed_amount||0),0);
+    return Math.min(100,d/Number(t.total_amount)*100);
+  });
+  return Math.round(p.reduce((a,b)=>a+b,0)/p.length);
+}
+function currentStreak(){
+  let k=dateKey(new Date()),streak=0;
+  const has=d=>cache.growth.some(x=>dateKey(x.created_at)===d)||cache.tasks.some(x=>x.completed_at&&dateKey(x.completed_at)===d);
+  if(!has(k))k=addDays(k,-1);
+  while(has(k)){streak++;k=addDays(k,-1)}
+  return streak;
+}
 function renderToday(){
- $('dateText').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long'});$('greeting').textContent=`${greeting()} ${esc(profile?.display_name||'')}`;
- const k=dateKey(new Date()),g=cache.growth.filter(x=>dateKey(x.created_at)===k),n=cache.notes.filter(x=>dateKey(x.created_at)===k),t=cache.tasks.filter(x=>x.due_date===k);$('todayCount').textContent=`${g.length+n.length+t.length} kayıt`;
- const items=[...n.map(x=>`📝 ${esc(x.title)}`),...g.map(x=>`${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}`),...t.slice(0,3).map(x=>`${x.completed?'☑️':'⬜'} ${esc(x.title)}`)];$('todayList').innerHTML=items.length?items.slice(0,7).map(x=>`<div class="item">${x}</div>`).join(''):'<div class="empty">Bugün henüz kayıt yok.</div>';
- const streak=currentStreak(),active=weekKeys().filter(x=>cache.growth.some(g=>dateKey(g.created_at)===x)||cache.tasks.some(t=>t.completed_at&&dateKey(t.completed_at)===x));$('streakCount').textContent=streak;$('weekActive').textContent=`${active.length}/7`;$('weekBar').style.width=active.length/7*100+'%';$('planToday').textContent=cache.tasks.filter(t=>t.due_date===k&&!t.completed).length;$('sharedMini').textContent=cache.shared.length;$('weekDots').innerHTML=weekKeys().map(x=>`<div class="dayDot ${active.includes(x)?'on':''}"><i></i>${new Date(x+'T00:00:00').toLocaleDateString('tr-TR',{weekday:'narrow'})}</div>`).join('');
- $('growthMini').innerHTML=cache.growth.slice(0,4).map(x=>`<div class="item"><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}</b><small>${fmtDate(x.created_at)}${x.body?' · not/özet var':''}</small></div>`).join('')||'<div class="empty">Henüz gelişim kaydı yok.</div>';
- $('communityMini').innerHTML='<div class="quote">Topluluk sayfasında haftalık sıralama, grafikler ve paylaşıma açık kayıtlar görünür.</div>';
+  $('dateText').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'long',day:'numeric',month:'long'});
+  $('greeting').textContent=`${greeting()} ${profile?.display_name||''}`;
+  const k=dateKey(new Date());
+  const g=cache.growth.filter(x=>dateKey(x.created_at)===k);
+  const n=cache.notes.filter(x=>dateKey(x.created_at)===k);
+  const t=cache.tasks.filter(x=>x.due_date===k);
+  $('todayCount').textContent=`${g.length+n.length+t.length} kayıt`;
+  const items=[...n.map(x=>`📝 ${esc(x.title)}`),...g.map(x=>`${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}`),...t.slice(0,3).map(x=>`${x.completed?'☑️':'⬜'} ${esc(x.title)}`)];
+  $('todayList').innerHTML=items.length?items.slice(0,7).map(x=>`<div class="item">${x}</div>`).join(''):`
+    <div class="empty"><div class="emo">☀️</div><b>Bugün henüz kayıt yok</b><p>Küçük bir adımla başla</p><button class="primary" onclick="openQuick()">+ Kayıt ekle</button></div>`;
+  const streak=currentStreak();
+  const active=weekKeys().filter(x=>cache.growth.some(g=>dateKey(g.created_at)===x)||cache.tasks.some(t=>t.completed_at&&dateKey(t.completed_at)===x));
+  $('streakCount').textContent=streak;
+  $('ringVal').textContent=streak;
+  const ringCirc=2*Math.PI*34;
+  const ringPct=Math.min(1,streak/30);
+  $('ringFg').setAttribute('stroke-dashoffset',String(ringCirc*(1-ringPct)));
+  $('weekActive').textContent=`${active.length}/7`;
+  $('weekBar').style.width=active.length/7*100+'%';
+  $('planToday').textContent=cache.tasks.filter(t=>t.due_date===k&&!t.completed).length;
+  // aktif ortak görev sayısı
+  let activeShared=0;
+  if(TEST_MODE){
+    activeShared=cache.shared.filter(t=>{
+      const ms=t._members||[];
+      const taken=ms.reduce((a,m)=>a+m.assigned_amount,0);
+      const total=Number(t.total_amount);
+      const allDone=taken>=total && ms.some(m=>m.assigned_amount>0) && ms.every(m=>m.completed_amount>=m.assigned_amount);
+      return !allDone;
+    }).length;
+  } else {
+    activeShared=cache.shared.length;
+  }
+  $('sharedMini').textContent=activeShared;
+  const dayNames=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+  $('weekDots').innerHTML=weekKeys().map((x,i)=>`<div class="dayDot ${active.includes(x)?'on':''}"><i></i>${dayNames[i]}</div>`).join('');
+  $('growthMini').innerHTML=cache.growth.slice(0,4).map(x=>`<div class="item"><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}</b><small>${fmtDate(x.created_at)}${x.body?' · not/özet var':''}</small></div>`).join('')||'<div class="empty"><div class="emo">🌱</div><b>Henüz kayıt yok</b></div>';
+  renderStreakGrid();
+}
+function renderStreakGrid(){
+  const cells=[];
+  const totalDays=56;
+  const end=dateKey(new Date());
+  for(let i=totalDays-1;i>=0;i--){
+    const d=addDays(end,-i);
+    const count=cache.growth.filter(x=>dateKey(x.created_at)===d).length
+      + cache.tasks.filter(x=>x.completed_at&&dateKey(x.completed_at)===d).length;
+    let lvl=0;
+    if(count===1)lvl=1;else if(count===2)lvl=2;else if(count===3)lvl=3;else if(count>=4)lvl=4;
+    cells.push(`<div class="sCell ${lvl?'l'+lvl:''}" title="${d}: ${count} kayıt"></div>`);
+  }
+  $('streakGrid').innerHTML=cells.join('');
 }
 async function renderAnalysis(){
- const keys=weekKeys(),g=cache.growth.filter(x=>keys.includes(dateKey(x.created_at))),done=cache.tasks.filter(x=>x.completed_at&&keys.includes(dateKey(x.completed_at)));$('aActive').textContent=`${new Set([...g.map(x=>dateKey(x.created_at)),...done.map(x=>dateKey(x.completed_at))]).size}/7`;$('aGrowth').textContent=g.length;$('aPlans').textContent=done.length;$('aShared').textContent=cache.contrib.reduce((a,x)=>a+Number(x.completed_amount||0),0);$('analysisMessage').textContent=g.length>=5?'Bu hafta düzenli bir tempo oluşmuş. Aynı istikrarı korumaya odaklan.':g.length?'Birkaç düzenli kayıt bile haftanın yönünü değiştirebilir.':'İlk kaydını yaparak haftanın ritmini başlat.';
- $('achievements').innerHTML=[currentStreak()>=3?'🌱 3 günlük seri':null,g.length>=10?'📚 10 gelişim kaydı':null].filter(Boolean).map(x=>`<div class="item"><b>${x}</b><small>Açılan başarı</small></div>`).join('')||'<div class="empty">Henüz başarı yok.</div>';
+  const keys=weekKeys();
+  const g=cache.growth.filter(x=>keys.includes(dateKey(x.created_at)));
+  const done=cache.tasks.filter(x=>x.completed_at&&keys.includes(dateKey(x.completed_at)));
+  $('aActive').textContent=`${new Set([...g.map(x=>dateKey(x.created_at)),...done.map(x=>dateKey(x.completed_at))]).size}/7`;
+  $('aGrowth').textContent=g.length;
+  $('aPlans').textContent=done.length;
+  $('aShared').textContent=cache.contrib.reduce((a,x)=>a+Number(x.completed_amount||0),0);
+  $('analysisMessage').textContent=g.length>=5?'Bu hafta düzenli bir tempo oluşmuş. Aynı istikrarı korumaya odaklan.':g.length?'Birkaç düzenli kayıt bile haftanın yönünü değiştirebilir.':'İlk kaydını yaparak haftanın ritmini başlat.';
+  const ach=[];
+  const s=currentStreak();
+  if(s>=3)ach.push('🌱 3 günlük seri');
+  if(s>=7)ach.push('🔥 7 günlük seri');
+  if(s>=30)ach.push('💎 30 günlük seri');
+  if(g.length>=10)ach.push('📚 10 gelişim kaydı');
+  if(done.length>=5)ach.push('✅ 5 plan tamamlandı');
+  $('achievements').innerHTML=ach.length?ach.map(x=>`<div class="item"><b>${x}</b><small>🎉 Açılan başarı</small></div>`).join(''):`<div class="empty"><div class="emo">🏆</div><b>Henüz başarı yok</b><p>Devam et, yakında açılacak</p></div>`;
 }
 async function renderAll(){
- renderToday();renderGrowth();renderPlans();await renderSharedTasks();await renderAnalysis();
- const pct=await currentSharedProgress();$('cShared').textContent=pct+'%';
- if(document.getElementById('community')?.classList.contains('active'))await renderCommunitySafe();
+  renderToday();
+  renderGrowth();
+  renderPlans();
+  await renderSharedTasks();
+  await renderAnalysis();
+  const pct=await currentSharedProgress();
+  $('cShared').textContent=pct+'%';
+  if($('community')?.classList.contains('active'))await renderCommunity();
 }
-async function openSettings(){openSheet(`<h2>Hesap</h2><p class="muted">${esc(profile?.display_name||'')} · @${esc(profile?.username||'')}</p><button class="danger" style="width:100%;margin-top:10px" onclick="logout()">Çıkış yap</button>`)}
-(async()=>{const {data:{session}}=await supabaseClient.auth.getSession();if(session)await boot()})();
+function openSettings(){
+  const theme=document.documentElement.getAttribute('data-theme')||'dark';
+  openSheet(`<h2>Hesap</h2>
+    <p class="muted" style="margin:4px 0 16px">${esc(profile?.display_name||'')} · @${esc(profile?.username||'')}</p>
+
+    <label class="lbl">Tema</label>
+    <div class="themeToggle">
+      <button class="${theme==='dark'?'active':''}" onclick="setTheme('dark')">🌙 Koyu</button>
+      <button class="${theme==='light'?'active':''}" onclick="setTheme('light')">☀️ Açık</button>
+    </div>
+
+    ${TEST_MODE?'<div class="chip warn" style="display:block;text-align:center;padding:10px;margin:14px 0 0">🧪 Test modu aktif</div>':''}
+    <button class="danger" style="width:100%;margin-top:16px" onclick="logout()">Çıkış yap</button>`);
+}
+
+/* ════════ LONG PRESS ════════ */
+function attachLongPress(){
+  document.querySelectorAll('[data-longpress]').forEach(el=>{
+    let timer;
+    const start=()=>{timer=setTimeout(()=>{haptic(20);const fn=el.dataset.longpress,id=el.dataset.id;window[fn]&&window[fn](id)},550)};
+    const cancel=()=>clearTimeout(timer);
+    el.addEventListener('touchstart',start,{passive:true});
+    el.addEventListener('touchend',cancel);
+    el.addEventListener('touchmove',cancel);
+    el.addEventListener('mousedown',start);
+    el.addEventListener('mouseup',cancel);
+    el.addEventListener('mouseleave',cancel);
+  });
+}
+
+/* ════════ PULL TO REFRESH ════════ */
+(function(){
+  let startY=0,pulling=false;
+  const ind=document.createElement('div');
+  ind.style.cssText='position:fixed;top:-60px;left:50%;transform:translateX(-50%);z-index:50;background:var(--sheet-bg);border:1px solid var(--line);border-radius:50%;width:38px;height:38px;display:grid;place-items:center;transition:top .2s ease;font-size:16px';
+  ind.textContent='↓';
+  document.body.appendChild(ind);
+  document.addEventListener('touchstart',e=>{if(window.scrollY<=0)startY=e.touches[0].clientY},{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!startY)return;
+    const dy=e.touches[0].clientY-startY;
+    if(dy>70&&!pulling){pulling=true;ind.style.top='14px';ind.textContent='↑';haptic(8)}
+  },{passive:true});
+  document.addEventListener('touchend',async()=>{
+    if(pulling){
+      ind.textContent='⟳';
+      await refresh();
+      ind.style.top='-60px';
+      setTimeout(()=>{ind.textContent='↓';pulling=false;startY=0},400);
+      toast('Yenilendi');
+    } else {startY=0}
+  });
+})();
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&$('overlay').classList.contains('show'))closeSheet();
+});
+
+/* ════════ BOOT ════════ */
+initTheme();
+(async()=>{
+  if(TEST_MODE){await bootTest();return}
+  if(!supabaseClient){$('loginError').textContent='Supabase yüklenemedi.';return}
+  const {data:{session}}=await supabaseClient.auth.getSession();
+  if(session)await boot();
+})();
 </script>
 </body>
 </html>
