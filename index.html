@@ -530,6 +530,8 @@ function initTheme(){
   let saved='dark';
   try{saved=localStorage.getItem('ts-theme')||'dark'}catch(e){}
   document.documentElement.setAttribute('data-theme',saved);
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.setAttribute('content',saved==='light'?'#f5f7fb':'#080a0f');
 }
 function setTheme(t){
   document.documentElement.setAttribute('data-theme',t);
@@ -538,7 +540,6 @@ function setTheme(t){
     const isDark=b.textContent.includes('Koyu');
     b.classList.toggle('active',(t==='dark'&&isDark)||(t==='light'&&!isDark));
   });
-  // meta theme-color güncelle
   const meta=document.querySelector('meta[name="theme-color"]');
   if(meta)meta.setAttribute('content',t==='light'?'#f5f7fb':'#080a0f');
   haptic(10);
@@ -574,24 +575,44 @@ async function bootTest(){
   $('testBanner').classList.remove('hidden');
   me={id:'test-user-1'};
   profile={id:'test-user-1',username:'test',display_name:'Test Kullanıcı'};
+
+  // 7 kişi — EN BAŞTA tanımlı (sıralama ve feed için gerekli)
+  window._profiles=[
+    {id:'test-user-1',username:'test',display_name:'Test Kullanıcı'},
+    {id:'u2',username:'ahmet',display_name:'Ahmet'},
+    {id:'u3',username:'fatma',display_name:'Fatma'},
+    {id:'u4',username:'ali',display_name:'Ali'},
+    {id:'u5',username:'zeynep',display_name:'Zeynep'},
+    {id:'u6',username:'mehmet',display_name:'Mehmet'},
+    {id:'u7',username:'ayse',display_name:'Ayşe'},
+  ];
+
   const today=dateKey(new Date());
   const now=Date.now();
   const day=86400000;
-  const fakeGrowth=[];
+
+  // ─── GELİŞİM KAYITLARI — 7 kişiye dağıtılmış ───
+  const userIds=['test-user-1','u2','u3','u4','u5','u6','u7'];
   const titles=['Risale-i Nur - Lem\'alar','Cevşen','Kur\'an-ı Kerim','Siyer','Tefsir','Hadis','Fıkıh'];
-  for(let i=0;i<45;i++){
+  const fakeGrowth=[];
+  for(let i=0;i<90;i++){
     const d=new Date(now-Math.floor(Math.random()*56)*day);
+    const ownerId = Math.random()<0.4
+      ? 'test-user-1'
+      : userIds[1+Math.floor(Math.random()*(userIds.length-1))];
     fakeGrowth.push({
-      id:'g'+i,user_id:'test-user-1',
+      id:'g'+i,
+      user_id:ownerId,
       type:['book','listen','learn'][i%3],
       title:titles[i%titles.length]+' — '+(i+1),
       source:['Said Nursî','Bediüzzaman','—','Risale'][i%4],
       body:i%3===0?'Bugünkü okumada dikkatimi çeken nokta: ihlas ve niyetin önemi.':'',
-      is_public:i%2===0,
+      is_public:true,
       created_at:d.toISOString()
     });
   }
   cache.growth=fakeGrowth.sort((a,b)=>b.created_at.localeCompare(a.created_at));
+
   cache.notes=[{id:'n1',user_id:'test-user-1',title:'Sabah notu',body:'Erken kalkmak verimli.',created_at:new Date(now-day).toISOString()}];
   cache.tasks=[
     {id:'t1',user_id:'test-user-1',title:'Sabah namazı',description:null,due_date:today,due_time:'06:00',completed:true,completed_at:new Date(now-3*3600000).toISOString()},
@@ -599,6 +620,8 @@ async function bootTest(){
     {id:'t3',user_id:'test-user-1',title:'Kitap oku',description:'20 sayfa',due_date:addDays(today,1),due_time:null,completed:false,completed_at:null},
     {id:'t4',user_id:'test-user-1',title:'Spor',description:null,due_date:addDays(today,-1),due_time:null,completed:true,completed_at:new Date(now-day).toISOString()},
   ];
+
+  // ─── ORTAK GÖREVLER — pay sahipliği + arşiv ───
   cache.shared=[
     {id:'s1',title:'Cevşen Hatmi',description:'Birlikte okuma — herkes pay alır',total_amount:100,unit:'Bab',created_by:'test-user-1',status:'active',
      _members:[
@@ -619,15 +642,7 @@ async function bootTest(){
      ]},
   ];
   cache.contrib=[];
-  window._profiles=[
-    {id:'test-user-1',username:'test',display_name:'Test Kullanıcı'},
-    {id:'u2',username:'ahmet',display_name:'Ahmet'},
-    {id:'u3',username:'fatma',display_name:'Fatma'},
-    {id:'u4',username:'ali',display_name:'Ali'},
-    {id:'u5',username:'zeynep',display_name:'Zeynep'},
-    {id:'u6',username:'mehmet',display_name:'Mehmet'},
-    {id:'u7',username:'ayse',display_name:'Ayşe'},
-  ];
+
   $('login').classList.add('hidden');
   $('app').classList.remove('hidden');
   $('nav').classList.remove('hidden');
@@ -833,7 +848,6 @@ async function addSharedTask(){
   closeSheet();haptic(15);renderAll();toast('✓ Ortak görev oluşturuldu');
 }
 
-/* --- PAY ALMA SHEET --- */
 async function openContribution(taskId){
   const task=cache.shared.find(x=>x.id===taskId);if(!task)return;
 
@@ -1002,18 +1016,13 @@ async function completeTask(id){
   const {error}=await supabaseClient.from('shared_task_members').update({completed_amount:amount}).eq('id',data.id);
   if(error){toast('Kaydedilemedi.');return}
   const done=amount>=Number(data.assigned_amount||0)&&Number(data.assigned_amount||0)>0;
-  // allDone kontrolü
   const {data:allM}=await supabaseClient.from('shared_task_members').select('assigned_amount,completed_amount').eq('shared_task_id',id);
   const taken=(allM||[]).reduce((a,m)=>a+Number(m.assigned_amount||0),0);
   const total=Number(task.total_amount);
   const allDone=taken>=total && (allM||[]).some(m=>Number(m.assigned_amount)>0) && (allM||[]).every(m=>Number(m.completed_amount)>=Number(m.assigned_amount));
   await loadData();renderAll();
-  if(done){
-    closeSheet();haptic([15,50,15]);
-    toast(allDone?`🎉 ${task.title} — görev tamamen tamamlandı!`:`🎉 ${task.title} — payını tamamladın!`);
-  } else {
-    haptic(14);toast(`✓ ${amount}/${data.assigned_amount} kaydedildi`);openContribution(id);
-  }
+  if(done){closeSheet();haptic([15,50,15]);toast(allDone?`🎉 ${task.title} — görev tamamen tamamlandı!`:`🎉 ${task.title} — payını tamamladın!`)}
+  else{haptic(14);toast(`✓ ${amount}/${data.assigned_amount} kaydedildi`);openContribution(id)}
 }
 
 async function renderSharedTasks(){
@@ -1031,7 +1040,6 @@ async function renderSharedTasks(){
     }));
   }
 
-  // Görevleri zenginleştir
   const enriched=cache.shared.map(t=>{
     const ms=allMembers.filter(x=>x.shared_task_id===t.id);
     const taken=ms.reduce((a,x)=>a+x.assigned_amount,0);
@@ -1052,7 +1060,6 @@ async function renderSharedTasks(){
   let myTotal=0;
   enriched.forEach(e=>{myTotal+=(e.mine?.completed_amount||0)});
 
-  // AKTİF
   $('sharedTasksList').innerHTML=active.length?active.map(e=>{
     const {t,ms,taken,done,total,remaining,pct,mine}=e;
     const chipsHtml=ms.length?ms.slice(0,6).map(m=>{
@@ -1087,7 +1094,6 @@ async function renderSharedTasks(){
   }).join(''):`
     <div class="empty"><div class="emo">🤝</div><b>${completed.length?'Tüm görevler tamamlandı!':'Henüz ortak görev yok'}</b><p>${completed.length?'Aşağıdaki arşive göz atabilirsin':'Topluluk için bir görev oluştur'}</p><button class="primary" onclick="openSharedTask()">+ Yeni görev</button></div>`;
 
-  // ARŞİV
   if(completed.length){
     $('archiveWrap').innerHTML=`
       <div class="archiveToggle" onclick="toggleArchive(this)">
@@ -1145,19 +1151,27 @@ function toggleArchive(el){
 /* ════════ COMMUNITY ════════ */
 async function communityData(){
   if(TEST_MODE){
-    const others=window._profiles.filter(p=>p.id!=='test-user-1');
-    return cache.growth.filter(x=>x.is_public).map((x,i)=>{
-      const owner=i%3===0?profile:others[i%others.length];
-      return {...x,profiles:owner};
-    });
+    // user_id zaten doğru — sadece profiles objesini ekle
+    const byId=Object.fromEntries((window._profiles||[]).map(p=>[p.id,p]));
+    return cache.growth
+      .filter(x=>x.is_public)
+      .map(x=>({...x,profiles:byId[x.user_id]||profile}));
   }
-  const {data:g}=await supabaseClient.from('growth_records').select('id,user_id,type,title,source,body,created_at,is_public,profiles(display_name,username)').eq('is_public',true).order('created_at',{ascending:false}).limit(100);
+  const {data:g}=await supabaseClient.from('growth_records')
+    .select('id,user_id,type,title,source,body,created_at,is_public,profiles(display_name,username)')
+    .eq('is_public',true)
+    .order('created_at',{ascending:false})
+    .limit(100);
   return g||[];
 }
 function profileList(){return window._profiles||[profile]}
 async function renderCommunity(){
   const feed=await communityData(),keys=weekKeys();
-  const weekly=profileList().map(p=>({id:p.id,name:p.display_name,count:feed.filter(x=>x.user_id===p.id&&keys.includes(dateKey(x.created_at))).length}));
+  const weekly=profileList().map(p=>({
+    id:p.id,
+    name:p.display_name,
+    count:feed.filter(x=>x.user_id===p.id&&keys.includes(dateKey(x.created_at))).length
+  }));
   weekly.sort((a,b)=>b.count-a.count);
   const total=weekly.reduce((a,b)=>a+b.count,0);
   $('cTotal').textContent=total;
@@ -1227,7 +1241,6 @@ function renderToday(){
   $('weekActive').textContent=`${active.length}/7`;
   $('weekBar').style.width=active.length/7*100+'%';
   $('planToday').textContent=cache.tasks.filter(t=>t.due_date===k&&!t.completed).length;
-  // aktif ortak görev sayısı
   let activeShared=0;
   if(TEST_MODE){
     activeShared=cache.shared.filter(t=>{
