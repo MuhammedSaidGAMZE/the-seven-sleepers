@@ -282,8 +282,6 @@ button{cursor:pointer;border:0;background:none}
   .fabFloat:hover{transform:none}
 }
 
-.testBanner{position:fixed;top:0;left:0;right:0;z-index:100;background:linear-gradient(90deg,#f2c66d,#ef7777);color:#1a0d0d;font-size:11px;font-weight:700;text-align:center;padding:5px;letter-spacing:.5px;text-transform:uppercase}
-
 .login{min-height:100dvh;display:grid;align-items:start;justify-items:center;padding:15vh 20px 40px}
 .loginCard{width:min(440px,100%);background:var(--card-bg);border:1px solid var(--line);border-radius:28px;padding:28px;box-shadow:0 25px 80px #0008;position:relative;overflow:hidden;animation:loginIn .55s cubic-bezier(.2,.8,.2,1)}
 .loginCard::before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;right:-100px;top:-120px;background:#789cff12;filter:blur(4px);pointer-events:none}
@@ -315,8 +313,6 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </style>
 </head>
 <body>
-
-<div id="testBanner" class="testBanner hidden">🧪 TEST MODU — Giriş atlandı, sahte verilerle çalışıyor</div>
 
 <div id="login" class="login">
   <div class="loginCard">
@@ -410,7 +406,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 </main>
 
 <main id="community" class="view">
-  <div class="sectionTitle"><h2>Topluluk</h2><span class="chip">7 kişi</span></div>
+  <div class="sectionTitle"><h2>Topluluk</h2><span class="chip" id="memberCount">7 kişi</span></div>
   <div class="grid">
     <section class="card span4"><h3>Bu hafta toplam</h3><div class="big" id="cTotal">0</div><p class="muted" style="margin:4px 0 0;font-size:12px">gelişim kaydı</p></section>
     <section class="card span4"><h3>En aktif</h3><div class="big" id="cBest">—</div><p class="muted" id="cBestMeta" style="margin:4px 0 0;font-size:12px">—</p></section>
@@ -483,8 +479,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 
 <script>
 /* ═══════════════════════════════════════════════════════════
-   🧪 TEST MODU — true yapınca giriş atlanır, sahte veri yüklenir.
-   Canlıya alırken false yap.
+   🧪 TEST MODU — false: gerçek Supabase
 ═══════════════════════════════════════════════════════════ */
 const TEST_MODE = false;
 
@@ -548,110 +543,30 @@ function setTheme(t){
 
 /* ════════ LOGIN ════════ */
 async function login(){
-  if(TEST_MODE){await bootTest();return}
   const u=$('loginUser').value.trim().toLowerCase(), p=$('loginPass').value;
   if(!u||!p){$('loginError').textContent='Kullanıcı adı ve şifre gerekli.';return}
   const {data,error}=await supabaseClient.auth.signInWithPassword({email:`${u}@seven-sleepers.local`,password:p});
   if(error){$('loginError').textContent='Giriş başarısız.';return}
   me=data.user;await boot();
 }
-async function logout(){if(TEST_MODE){location.reload();return}await supabaseClient.auth.signOut();location.reload()}
+async function logout(){await supabaseClient.auth.signOut();location.reload()}
 
 async function boot(){
   const {data:{user}}=await supabaseClient.auth.getUser(); if(!user)return;
   me=user;
   const {data:p,error}=await supabaseClient.from('profiles').select('*').eq('id',me.id).single();
-  if(error||!p){$('loginError').textContent='Profil bulunamadı.';return}
+  if(error||!p){$('loginError').textContent='Profil bulunamadı. SQL çalıştırdın mı?';return}
   profile=p;
   $('login').classList.add('hidden');
   $('app').classList.remove('hidden');
   $('nav').classList.remove('hidden');
   $('fab').classList.remove('hidden');
-  await loadData();renderAll();
-}
-
-/* ════════ TEST MODE ════════ */
-async function bootTest(){
-  $('testBanner').classList.remove('hidden');
-  me={id:'test-user-1'};
-  profile={id:'test-user-1',username:'test',display_name:'Test Kullanıcı'};
-
-  // 7 kişi — EN BAŞTA tanımlı (sıralama ve feed için gerekli)
-  window._profiles=[
-    {id:'test-user-1',username:'test',display_name:'Test Kullanıcı'},
-    {id:'u2',username:'ahmet',display_name:'Ahmet'},
-    {id:'u3',username:'fatma',display_name:'Fatma'},
-    {id:'u4',username:'ali',display_name:'Ali'},
-    {id:'u5',username:'zeynep',display_name:'Zeynep'},
-    {id:'u6',username:'mehmet',display_name:'Mehmet'},
-    {id:'u7',username:'ayse',display_name:'Ayşe'},
-  ];
-
-  const today=dateKey(new Date());
-  const now=Date.now();
-  const day=86400000;
-
-  // ─── GELİŞİM KAYITLARI — 7 kişiye dağıtılmış ───
-  const userIds=['test-user-1','u2','u3','u4','u5','u6','u7'];
-  const titles=['Risale-i Nur - Lem\'alar','Cevşen','Kur\'an-ı Kerim','Siyer','Tefsir','Hadis','Fıkıh'];
-  const fakeGrowth=[];
-  for(let i=0;i<90;i++){
-    const d=new Date(now-Math.floor(Math.random()*56)*day);
-    const ownerId = Math.random()<0.4
-      ? 'test-user-1'
-      : userIds[1+Math.floor(Math.random()*(userIds.length-1))];
-    fakeGrowth.push({
-      id:'g'+i,
-      user_id:ownerId,
-      type:['book','listen','learn'][i%3],
-      title:titles[i%titles.length]+' — '+(i+1),
-      source:['Said Nursî','Bediüzzaman','—','Risale'][i%4],
-      body:i%3===0?'Bugünkü okumada dikkatimi çeken nokta: ihlas ve niyetin önemi.':'',
-      is_public:true,
-      created_at:d.toISOString()
-    });
-  }
-  cache.growth=fakeGrowth.sort((a,b)=>b.created_at.localeCompare(a.created_at));
-
-  cache.notes=[{id:'n1',user_id:'test-user-1',title:'Sabah notu',body:'Erken kalkmak verimli.',created_at:new Date(now-day).toISOString()}];
-  cache.tasks=[
-    {id:'t1',user_id:'test-user-1',title:'Sabah namazı',description:null,due_date:today,due_time:'06:00',completed:true,completed_at:new Date(now-3*3600000).toISOString()},
-    {id:'t2',user_id:'test-user-1',title:'Cevşen oku',description:null,due_date:today,due_time:'20:00',completed:false,completed_at:null},
-    {id:'t3',user_id:'test-user-1',title:'Kitap oku',description:'20 sayfa',due_date:addDays(today,1),due_time:null,completed:false,completed_at:null},
-    {id:'t4',user_id:'test-user-1',title:'Spor',description:null,due_date:addDays(today,-1),due_time:null,completed:true,completed_at:new Date(now-day).toISOString()},
-  ];
-
-  // ─── ORTAK GÖREVLER — pay sahipliği + arşiv ───
-  cache.shared=[
-    {id:'s1',title:'Cevşen Hatmi',description:'Birlikte okuma — herkes pay alır',total_amount:100,unit:'Bab',created_by:'test-user-1',status:'active',
-     _members:[
-       {user_id:'u2',username:'ahmet',display_name:'Ahmet',assigned_amount:25,completed_amount:25},
-       {user_id:'u3',username:'fatma',display_name:'Fatma',assigned_amount:15,completed_amount:8},
-       {user_id:'u4',username:'ali',display_name:'Ali',assigned_amount:10,completed_amount:0},
-     ]},
-    {id:'s2',title:'Kur\'an Hatmi',description:'30 cüz paylaşıldı',total_amount:30,unit:'Cüz',created_by:'other',status:'active',
-     _members:[
-       {user_id:'u5',username:'zeynep',display_name:'Zeynep',assigned_amount:5,completed_amount:3},
-     ]},
-    {id:'s3',title:'Salavat Kampanyası',description:'Birlikte 1000 salavat',total_amount:1000,unit:'Salavat',created_by:'test-user-1',status:'active',
-     _members:[]},
-    {id:'s4',title:'Yasin Hatmi',description:'Tamamlanmış örnek — arşivde görünür',total_amount:7,unit:'Adet',created_by:'other',status:'active',
-     _members:[
-       {user_id:'u2',username:'ahmet',display_name:'Ahmet',assigned_amount:3,completed_amount:3},
-       {user_id:'u3',username:'fatma',display_name:'Fatma',assigned_amount:4,completed_amount:4},
-     ]},
-  ];
-  cache.contrib=[];
-
-  $('login').classList.add('hidden');
-  $('app').classList.remove('hidden');
-  $('nav').classList.remove('hidden');
-  $('fab').classList.remove('hidden');
+  await loadData();
+  await loadProfiles();
   renderAll();
 }
 
 async function loadData(){
-  if(TEST_MODE)return;
   const [g,n,t,s,c]=await Promise.all([
     supabaseClient.from('growth_records').select('*').eq('user_id',me.id).order('created_at',{ascending:false}),
     supabaseClient.from('notes').select('*').eq('user_id',me.id).order('created_at',{ascending:false}),
@@ -661,7 +576,14 @@ async function loadData(){
   ]);
   cache.growth=g.data||[];cache.notes=n.data||[];cache.tasks=t.data||[];cache.shared=s.data||[];cache.contrib=c.data||[];
 }
-async function refresh(){if(TEST_MODE){renderAll();return}await loadData();renderAll()}
+async function loadProfiles(){
+  const {data,error}=await supabaseClient.from('profiles').select('id,username,display_name').order('display_name');
+  if(error){console.warn('profiles çekilemedi:',error);window._profiles=[profile];return}
+  window._profiles=(data&&data.length)?data:[profile];
+  // Üye sayısını başlıkta güncelle
+  const mc=$('memberCount');if(mc)mc.textContent=`${window._profiles.length} kişi`;
+}
+async function refresh(){await loadData();await loadProfiles();renderAll()}
 
 function openQuick(){
   openSheet(`<h2>Hızlı kayıt</h2><p class="muted" style="margin:4px 0 0;font-size:12px">Ne eklemek istersin?</p>
@@ -705,9 +627,9 @@ function openGrowth(){
 async function addGrowth(){
   const title=$('gTitle').value.trim();if(!title){toast('Başlık gerekli.');haptic([10,30,10]);return}
   const rec={user_id:me.id,type:$('gType').value,title,source:$('gSource').value.trim()||null,body:$('gBody').value.trim()||null,is_public:$('gPublic').checked};
-  if(TEST_MODE){cache.growth.unshift({id:'g'+Date.now(),...rec,created_at:nowISO(),_new:true})}
-  else{const {error}=await supabaseClient.from('growth_records').insert(rec);if(error){toast('Kayıt eklenemedi.');return}await loadData()}
-  closeSheet();haptic(15);renderAll();toast('✓ Gelişim kaydı eklendi');
+  const {error}=await supabaseClient.from('growth_records').insert(rec);
+  if(error){toast('Kayıt eklenemedi.');return}
+  closeSheet();haptic(15);await refresh();toast('✓ Gelişim kaydı eklendi');
 }
 function renderGrowth(){
   const all=cache.growth,q=($('growthSearch')?.value||'').toLowerCase();
@@ -716,7 +638,7 @@ function renderGrowth(){
   $('learnCount').textContent=all.filter(x=>x.type==='learn').length;
   const a=all.filter(x=>(x.title+' '+(x.source||'')+' '+(x.body||'')).toLowerCase().includes(q));
   $('growthList').innerHTML=a.length?a.map(x=>`
-    <div class="item ${x._new?'new':''}" data-longpress="deleteGrowth" data-id="${x.id}">
+    <div class="item" data-longpress="deleteGrowth" data-id="${x.id}">
       <div class="row"><div style="min-width:0;flex:1"><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}</b>
       <small>${esc(x.source||'Kişisel kayıt')} · ${fmtDate(x.created_at)} · ${fmtTime(x.created_at)}</small></div>
       <span class="chip">${x.is_public?'🌐 Topluluk':'🔒 Özel'}</span></div>
@@ -736,10 +658,9 @@ function renderGrowthChart(){
 }
 async function deleteGrowth(id){
   confirmSheet('Kaydı sil?','Bu işlem geri alınamaz.',async()=>{
-    if(TEST_MODE){cache.growth=cache.growth.filter(x=>x.id!==id);renderAll();toast('Silindi.');return}
     const {error}=await supabaseClient.from('growth_records').delete().eq('id',id).eq('user_id',me.id);
     if(error){toast('Silinemedi.');return}
-    await loadData();renderAll();toast('Silindi.')
+    await refresh();toast('Silindi.')
   });
 }
 
@@ -756,10 +677,9 @@ function openNote(){
 async function addNote(){
   const title=$('nTitle').value.trim(),body=$('nBody').value.trim();
   if(!title&&!body){toast('Bir şey yazmalısın.');return}
-  const rec={user_id:me.id,title:title||'Not',body};
-  if(TEST_MODE){cache.notes.unshift({id:'n'+Date.now(),...rec,created_at:nowISO()})}
-  else{const {error}=await supabaseClient.from('notes').insert(rec);if(error){toast('Not eklenemedi.');return}await loadData()}
-  closeSheet();haptic(15);renderAll();toast('✓ Not kaydedildi');
+  const {error}=await supabaseClient.from('notes').insert({user_id:me.id,title:title||'Not',body});
+  if(error){toast('Not eklenemedi.');return}
+  closeSheet();haptic(15);await refresh();toast('✓ Not kaydedildi');
 }
 
 /* ════════ PLANS ════════ */
@@ -785,16 +705,15 @@ function quickDate(k){$('tDate').value=k;haptic(8)}
 async function addPlan(){
   const title=$('tTitle').value.trim();if(!title){toast('Plan adı gerekli.');return}
   const rec={user_id:me.id,title,description:$('tDesc').value.trim()||null,due_date:$('tDate').value||dateKey(new Date()),due_time:$('tTime').value||null,completed:false,completed_at:null};
-  if(TEST_MODE){cache.tasks.unshift({id:'t'+Date.now(),...rec,_new:true})}
-  else{const {error}=await supabaseClient.from('personal_tasks').insert(rec);if(error){toast('Plan eklenemedi.');return}await loadData()}
-  closeSheet();haptic(15);renderAll();toast('✓ Plan eklendi');
+  const {error}=await supabaseClient.from('personal_tasks').insert(rec);
+  if(error){toast('Plan eklenemedi.');return}
+  closeSheet();haptic(15);await refresh();toast('✓ Plan eklendi');
 }
 async function togglePlan(id,done){
   haptic(done?12:6);
-  if(TEST_MODE){const t=cache.tasks.find(x=>x.id===id);if(t){t.completed=done;t.completed_at=done?nowISO():null}renderAll();return}
   const {error}=await supabaseClient.from('personal_tasks').update({completed:done,completed_at:done?nowISO():null}).eq('id',id).eq('user_id',me.id);
   if(error){toast('Güncellenemedi.');return}
-  await loadData();renderAll();
+  await refresh();
 }
 function setPlanFilter(f,btn){
   planFilter=f;
@@ -809,7 +728,7 @@ function renderPlans(){
   if(planFilter==='done')a=a.filter(t=>t.completed);
   a.sort((x,y)=>(x.completed-y.completed)||x.due_date.localeCompare(y.due_date));
   $('plansList').innerHTML=a.length?a.map(t=>`
-    <div class="item ${t._new?'new':''}">
+    <div class="item">
       <div class="row"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
         <button class="check ${t.completed?'done':''}" onclick="togglePlan('${t.id}',${!t.completed})">${t.completed?'✓':''}</button>
         <div style="min-width:0;flex:1"><b class="${t.completed?'taskDone':''}">${esc(t.title)}</b>
@@ -838,34 +757,24 @@ async function addSharedTask(){
   const title=$('sTitle').value.trim(),amount=Number($('sAmount').value),unit=$('sUnit').value.trim();
   if(!title||!amount||!unit){toast('Başlık, miktar ve birim gerekli.');haptic([10,30,10]);return}
   const rec={title,description:$('sDesc').value.trim()||null,total_amount:amount,unit,created_by:me.id,status:'active'};
-  if(TEST_MODE){cache.shared.unshift({id:'s'+Date.now(),...rec,_members:[],_new:true})}
-  else{
-    const {data,error}=await supabaseClient.from('shared_tasks').insert(rec).select().single();
-    if(error){toast('Oluşturulamadı.');return}
-    await supabaseClient.from('shared_task_members').insert({shared_task_id:data.id,user_id:me.id,assigned_amount:0,completed_amount:0});
-    await loadData();
-  }
-  closeSheet();haptic(15);renderAll();toast('✓ Ortak görev oluşturuldu');
+  const {data,error}=await supabaseClient.from('shared_tasks').insert(rec).select().single();
+  if(error){toast('Oluşturulamadı.');return}
+  await supabaseClient.from('shared_task_members').insert({shared_task_id:data.id,user_id:me.id,assigned_amount:0,completed_amount:0});
+  closeSheet();haptic(15);await refresh();toast('✓ Ortak görev oluşturuldu');
 }
 
 async function openContribution(taskId){
   const task=cache.shared.find(x=>x.id===taskId);if(!task)return;
-
-  let members=[];
-  if(TEST_MODE){
-    members=(task._members||[]).slice();
-  } else {
-    const {data}=await supabaseClient.from('shared_task_members')
-      .select('*,profiles(display_name,username)')
-      .eq('shared_task_id',taskId);
-    members=(data||[]).map(m=>({
-      user_id:m.user_id,
-      username:m.profiles?.username||'',
-      display_name:m.profiles?.display_name||'Kullanıcı',
-      assigned_amount:Number(m.assigned_amount||0),
-      completed_amount:Number(m.completed_amount||0)
-    }));
-  }
+  const {data}=await supabaseClient.from('shared_task_members')
+    .select('*,profiles(display_name,username)')
+    .eq('shared_task_id',taskId);
+  const members=(data||[]).map(m=>({
+    user_id:m.user_id,
+    username:m.profiles?.username||'',
+    display_name:m.profiles?.display_name||'Kullanıcı',
+    assigned_amount:Number(m.assigned_amount||0),
+    completed_amount:Number(m.completed_amount||0)
+  }));
 
   const total=Number(task.total_amount);
   const taken=members.reduce((a,m)=>a+m.assigned_amount,0);
@@ -963,17 +872,6 @@ async function claimTask(id){
   const amount=Number($('claimAmount').value)||0;
   const total=Number(task.total_amount);
 
-  if(TEST_MODE){
-    const members=task._members||[];
-    const others=members.filter(m=>m.user_id!==me.id).reduce((a,m)=>a+m.assigned_amount,0);
-    if(amount+others>total){toast(`⛔ Havuzda yeterli pay yok. Kalan: ${Math.max(0,total-others)}`);haptic([10,30,10]);return}
-    const mine=members.find(m=>m.user_id===me.id);
-    if(mine){mine.assigned_amount=amount;if(mine.completed_amount>amount)mine.completed_amount=amount}
-    else{members.push({user_id:me.id,username:profile.username,display_name:profile.display_name,assigned_amount:amount,completed_amount:0})}
-    task._members=members;
-    haptic(18);toast(`🔒 ${amount} ${task.unit} kilitlendi`);renderAll();openContribution(id);return;
-  }
-
   const {data:allMembers}=await supabaseClient.from('shared_task_members').select('user_id,assigned_amount').eq('shared_task_id',id);
   const others=(allMembers||[]).filter(m=>m.user_id!==me.id).reduce((a,m)=>a+Number(m.assigned_amount||0),0);
   if(amount+others>total){toast(`⛔ Havuzda yeterli pay yok. Kalan: ${Math.max(0,total-others)}`);haptic([10,30,10]);return}
@@ -983,32 +881,14 @@ async function claimTask(id){
   if(data){({error}=await supabaseClient.from('shared_task_members').update({assigned_amount:amount}).eq('id',data.id))}
   else{({error}=await supabaseClient.from('shared_task_members').insert({shared_task_id:id,user_id:me.id,assigned_amount:amount,completed_amount:0}))}
   if(error){toast('Pay kaydedilemedi.');return}
-  haptic(18);toast(`🔒 ${amount} ${task.unit} kilitlendi`);await loadData();renderAll();openContribution(id);
+  haptic(18);toast(`🔒 ${amount} ${task.unit} kilitlendi`);
+  await refresh();
+  openContribution(id);
 }
 
 async function completeTask(id){
   const task=cache.shared.find(x=>x.id===id);if(!task)return;
   const amount=Number($('completeAmount').value)||0;
-
-  if(TEST_MODE){
-    const members=task._members||[];
-    const mine=members.find(m=>m.user_id===me.id);
-    if(!mine){toast('Önce pay almalısın.');haptic([10,30,10]);return}
-    if(amount>mine.assigned_amount){toast(`Payından fazlasını tamamlayamazsın (max ${mine.assigned_amount})`);haptic([10,30,10]);return}
-    mine.completed_amount=amount;
-    const done=amount>=mine.assigned_amount&&mine.assigned_amount>0;
-    const total=Number(task.total_amount);
-    const taken=members.reduce((a,m)=>a+m.assigned_amount,0);
-    const allDone=taken>=total && members.some(m=>m.assigned_amount>0) && members.every(m=>m.completed_amount>=m.assigned_amount);
-    renderAll();
-    if(done){
-      closeSheet();haptic([15,50,15]);
-      toast(allDone?`🎉 ${task.title} — görev tamamen tamamlandı!`:`🎉 ${task.title} — payını tamamladın!`);
-    } else {
-      haptic(14);toast(`✓ ${amount}/${mine.assigned_amount} kaydedildi`);openContribution(id);
-    }
-    return;
-  }
 
   let {data}=await supabaseClient.from('shared_task_members').select('id,assigned_amount').eq('shared_task_id',id).eq('user_id',me.id).maybeSingle();
   if(!data){toast('Önce pay almalısın.');return}
@@ -1020,25 +900,25 @@ async function completeTask(id){
   const taken=(allM||[]).reduce((a,m)=>a+Number(m.assigned_amount||0),0);
   const total=Number(task.total_amount);
   const allDone=taken>=total && (allM||[]).some(m=>Number(m.assigned_amount)>0) && (allM||[]).every(m=>Number(m.completed_amount)>=Number(m.assigned_amount));
-  await loadData();renderAll();
-  if(done){closeSheet();haptic([15,50,15]);toast(allDone?`🎉 ${task.title} — görev tamamen tamamlandı!`:`🎉 ${task.title} — payını tamamladın!`)}
-  else{haptic(14);toast(`✓ ${amount}/${data.assigned_amount} kaydedildi`);openContribution(id)}
+  await refresh();
+  if(done){
+    closeSheet();haptic([15,50,15]);
+    toast(allDone?`🎉 ${task.title} — görev tamamen tamamlandı!`:`🎉 ${task.title} — payını tamamladın!`);
+  } else {
+    haptic(14);toast(`✓ ${amount}/${data.assigned_amount} kaydedildi`);
+    openContribution(id);
+  }
 }
 
 async function renderSharedTasks(){
-  let allMembers=[];
-  if(TEST_MODE){
-    cache.shared.forEach(t=>{(t._members||[]).forEach(m=>allMembers.push({...m,shared_task_id:t.id}))});
-  } else {
-    const {data}=await supabaseClient.from('shared_task_members').select('*,profiles(display_name)');
-    allMembers=(data||[]).map(m=>({
-      shared_task_id:m.shared_task_id,
-      user_id:m.user_id,
-      display_name:m.profiles?.display_name||'Kullanıcı',
-      assigned_amount:Number(m.assigned_amount||0),
-      completed_amount:Number(m.completed_amount||0),
-    }));
-  }
+  const {data:rows}=await supabaseClient.from('shared_task_members').select('*,profiles(display_name)');
+  const allMembers=(rows||[]).map(m=>({
+    shared_task_id:m.shared_task_id,
+    user_id:m.user_id,
+    display_name:m.profiles?.display_name||'Kullanıcı',
+    assigned_amount:Number(m.assigned_amount||0),
+    completed_amount:Number(m.completed_amount||0),
+  }));
 
   const enriched=cache.shared.map(t=>{
     const ms=allMembers.filter(x=>x.shared_task_id===t.id);
@@ -1079,7 +959,7 @@ async function renderSharedTasks(){
         :`<span class="chip warn" style="font-size:10px;padding:4px 8px">🔒 ${mine.completed_amount}/${mine.assigned_amount}</span>`;
     }
 
-    return `<div class="item ${t._new?'new':''}">
+    return `<div class="item">
       <div class="row" style="margin-bottom:8px;align-items:flex-start">
         <div style="min-width:0;flex:1">
           <b>🤝 ${esc(t.title)}</b>
@@ -1150,13 +1030,6 @@ function toggleArchive(el){
 
 /* ════════ COMMUNITY ════════ */
 async function communityData(){
-  if(TEST_MODE){
-    // user_id zaten doğru — sadece profiles objesini ekle
-    const byId=Object.fromEntries((window._profiles||[]).map(p=>[p.id,p]));
-    return cache.growth
-      .filter(x=>x.is_public)
-      .map(x=>({...x,profiles:byId[x.user_id]||profile}));
-  }
   const {data:g}=await supabaseClient.from('growth_records')
     .select('id,user_id,type,title,source,body,created_at,is_public,profiles(display_name,username)')
     .eq('is_public',true)
@@ -1169,14 +1042,15 @@ async function renderCommunity(){
   const feed=await communityData(),keys=weekKeys();
   const weekly=profileList().map(p=>({
     id:p.id,
-    name:p.display_name,
+    name:p.display_name||p.username||'Kullanıcı',
     count:feed.filter(x=>x.user_id===p.id&&keys.includes(dateKey(x.created_at))).length
   }));
   weekly.sort((a,b)=>b.count-a.count);
   const total=weekly.reduce((a,b)=>a+b.count,0);
   $('cTotal').textContent=total;
-  $('cBest').textContent=weekly[0]?.name||'—';
-  $('cBestMeta').textContent=weekly[0]?`${weekly[0].count} kayıt`:'Henüz veri yok';
+  const best=weekly.find(x=>x.count>0);
+  $('cBest').textContent=best?best.name:'—';
+  $('cBestMeta').textContent=best?`${best.count} kayıt`:'Henüz veri yok';
   $('communityRanking').innerHTML=weekly.map((x,i)=>`
     <div class="rank"><div class="rankNo">${i+1}</div>
     <div class="rankMain"><div class="row"><b>${esc(x.name)}</b><span class="chip">${x.count} kayıt</span></div>
@@ -1199,16 +1073,11 @@ function openCommunityDetail(id){
     ${x.body?`<p><b>Not / Özet:</b><br>${esc(x.body).replace(/\n/g,'<br>')}</p>`:'<p class="muted">Bu kayda özet veya not eklenmemiş.</p>'}</div>`);
 }
 async function currentSharedProgress(){
-  let allMembers=[];
-  if(TEST_MODE){
-    cache.shared.forEach(t=>{(t._members||[]).forEach(m=>allMembers.push({...m,shared_task_id:t.id}))});
-  } else {
-    const {data}=await supabaseClient.from('shared_task_members').select('shared_task_id,completed_amount');
-    allMembers=data||[];
-  }
+  const {data}=await supabaseClient.from('shared_task_members').select('shared_task_id,completed_amount');
+  const rows=data||[];
   if(!cache.shared.length)return 0;
   const p=cache.shared.map(t=>{
-    const d=allMembers.filter(x=>x.shared_task_id===t.id).reduce((a,x)=>a+Number(x.completed_amount||0),0);
+    const d=rows.filter(x=>x.shared_task_id===t.id).reduce((a,x)=>a+Number(x.completed_amount||0),0);
     return Math.min(100,d/Number(t.total_amount)*100);
   });
   return Math.round(p.reduce((a,b)=>a+b,0)/p.length);
@@ -1241,19 +1110,7 @@ function renderToday(){
   $('weekActive').textContent=`${active.length}/7`;
   $('weekBar').style.width=active.length/7*100+'%';
   $('planToday').textContent=cache.tasks.filter(t=>t.due_date===k&&!t.completed).length;
-  let activeShared=0;
-  if(TEST_MODE){
-    activeShared=cache.shared.filter(t=>{
-      const ms=t._members||[];
-      const taken=ms.reduce((a,m)=>a+m.assigned_amount,0);
-      const total=Number(t.total_amount);
-      const allDone=taken>=total && ms.some(m=>m.assigned_amount>0) && ms.every(m=>m.completed_amount>=m.assigned_amount);
-      return !allDone;
-    }).length;
-  } else {
-    activeShared=cache.shared.length;
-  }
-  $('sharedMini').textContent=activeShared;
+  $('sharedMini').textContent=cache.shared.length;
   const dayNames=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
   $('weekDots').innerHTML=weekKeys().map((x,i)=>`<div class="dayDot ${active.includes(x)?'on':''}"><i></i>${dayNames[i]}</div>`).join('');
   $('growthMini').innerHTML=cache.growth.slice(0,4).map(x=>`<div class="item"><b>${x.type==='book'?'📚':x.type==='listen'?'🎧':'🧠'} ${esc(x.title)}</b><small>${fmtDate(x.created_at)}${x.body?' · not/özet var':''}</small></div>`).join('')||'<div class="empty"><div class="emo">🌱</div><b>Henüz kayıt yok</b></div>';
@@ -1312,7 +1169,6 @@ function openSettings(){
       <button class="${theme==='light'?'active':''}" onclick="setTheme('light')">☀️ Açık</button>
     </div>
 
-    ${TEST_MODE?'<div class="chip warn" style="display:block;text-align:center;padding:10px;margin:14px 0 0">🧪 Test modu aktif</div>':''}
     <button class="danger" style="width:100%;margin-top:16px" onclick="logout()">Çıkış yap</button>`);
 }
 
@@ -1362,7 +1218,6 @@ document.addEventListener('keydown',e=>{
 /* ════════ BOOT ════════ */
 initTheme();
 (async()=>{
-  if(TEST_MODE){await bootTest();return}
   if(!supabaseClient){$('loginError').textContent='Supabase yüklenemedi.';return}
   const {data:{session}}=await supabaseClient.auth.getSession();
   if(session)await boot();
